@@ -93,7 +93,6 @@ function Conatiner() {
                   sx={{
                     border: "1px solid #ccc",
                     borderRadius: 2,
-                    border: " 0.94px solid #E1E1E6 ",
                   }}
                 >
                   <Box

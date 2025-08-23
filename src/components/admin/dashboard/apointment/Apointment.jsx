@@ -71,7 +71,6 @@ function Apointment() {
               sx={{
                 display: "flex",
                 flexDirection: "row",
-                justifyContent: "center",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 1.5,

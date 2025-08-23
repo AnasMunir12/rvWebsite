@@ -440,8 +440,6 @@ function LeadManagement() {
                                     onClick={handleclick}
                                     size="small"
                                     sx={{
-                                      borderRadius: "0.5rem",
-
                                       "&:hover": {
                                         bgcolor: "var(--icon-color)",
                                         color: "black",

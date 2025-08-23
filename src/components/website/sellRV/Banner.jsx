@@ -827,7 +827,7 @@ function Banner() {
                         <Box>
                           <Typography
                             sx={{
-                              fontSize: "var(--font-family-montserrat)",
+                              fontFamily: "var(--font-family-montserrat)",
                               color: "var(--white-text)",
                               fontWeight: 500,
                               fontSize: "var(--font-md)",
@@ -918,7 +918,7 @@ function Banner() {
                         <Box>
                           <Typography
                             sx={{
-                              fontSize: "var(--font-family-montserrat)",
+                              fontFamily: "var(--font-family-montserrat)",
                               color: "var(--white-text)",
                               fontWeight: 500,
                               fontSize: "var(--font-md)",

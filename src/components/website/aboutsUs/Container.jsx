@@ -26,7 +26,7 @@ function Container() {
       display="flex"
       justifyContent="center"
       alignItems="center"
-      sx={{ pt: "80px", pb: "80px", px:{xs:2, sm:0} }} 
+      sx={{ pt: "80px", pb: "80px", px: { xs: 2, sm: 0 } }}
     >
       <Grid
         container
@@ -51,7 +51,6 @@ function Container() {
                 width: "125px",
                 height: "auto",
                 position: "absolute",
-                zIndex: 1,
                 top: "-40px", // 🔥 move slightly up
                 left: "18px", // similar to ml:2
                 zIndex: 1,
@@ -96,23 +95,23 @@ function Container() {
             <Typography
               sx={{
                 display: "inline-block",
-                  background: 
+                background:
                   "linear-gradient(180deg, rgba(255, 200, 59, 0) 46%, rgba(255, 200, 59, 0.49) 46%)",
 
                 px: 1,
                 fontFamily: "var(--font-family-montserrat)",
                 textTransform: "uppercase",
                 fontSize: "var(--font-md)",
-                fontWeight:600,
-                width:'180px',
-                color:'#222222'
+                fontWeight: 600,
+                width: "180px",
+                color: "#222222",
               }}
             >
               About Rv Van
             </Typography>
             <Typography
               sx={{
-                fontSize: { xs:'var(--font-standard)', md: "var(--font-lg)" },
+                fontSize: { xs: "var(--font-standard)", md: "var(--font-lg)" },
                 fontFamily: "var(--font-family-montserrat)",
                 fontWeight: 600,
                 color: "var(--bg-color)",
@@ -122,7 +121,7 @@ function Container() {
             </Typography>
             <Typography
               sx={{
-                fontSize: {xs:'var(--font-sm)', md: "var(--font-md)"},
+                fontSize: { xs: "var(--font-sm)", md: "var(--font-md)" },
                 fontFamily: "var(--font-family-lato)",
                 fontWeight: 400,
                 color: "var(--bg-color)",
@@ -143,7 +142,7 @@ function Container() {
                   <Box component="img" src={data.img} alt="" />
                   <Typography
                     sx={{
-                      fontSize:{xs:"var(--font-sm)", md:  "var(--font-md)" },
+                      fontSize: { xs: "var(--font-sm)", md: "var(--font-md)" },
                       color: "#222222BF",
                       fontWeight: 400,
                       lineHeight: "24px",
