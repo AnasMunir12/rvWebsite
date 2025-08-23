@@ -143,6 +143,7 @@ function Touch() {
                       component="img"
                       src={separatorImages[index]}
                       alt="separator"
+                      sx={{ width: 40, height: "auto" }}
                     />
                   </Grid>
                 )}
