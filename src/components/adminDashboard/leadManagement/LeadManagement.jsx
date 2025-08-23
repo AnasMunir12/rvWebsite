@@ -578,7 +578,6 @@ function LeadManagement() {
                 PaperProps={{
                   sx: {
                     // boxShadow: "0px 4px 12px rgba(138, 143, 150, 0.1)", // custom shadow with #8a8f96
-                    borderRadius: 0, // remove rounded corners
                     bgcolor: "var(--white-text)", // your custom bg
                     mt: 1, // optional spacing
                     color: "#8a8f96",
