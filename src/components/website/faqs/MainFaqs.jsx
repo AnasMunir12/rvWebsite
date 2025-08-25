@@ -7,10 +7,10 @@ import Footer from "../footer/Footer";
 function MainFaqs() {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Banner />
       <Conatiner />
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

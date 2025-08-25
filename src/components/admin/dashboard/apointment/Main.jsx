@@ -23,8 +23,8 @@ function Main() {
         sx={{
           backgroundColor: "black",
           boxShadow: "0px 0px 4px 0px #FF8E291A",
-          px: { xs: 3, sm: 8 },
-          py: 5,
+          px: 3,
+          py: 2,
           borderRadius: "20px",
           display: "flex",
           flexDirection: "column",

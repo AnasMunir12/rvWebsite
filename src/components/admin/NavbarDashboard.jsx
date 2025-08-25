@@ -12,7 +12,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
+import { useSelector } from "react-redux";
+
 function NavbarDashboard() {
+  const users = useSelector((state) => state.rvConsignment.users);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -194,41 +198,79 @@ function NavbarDashboard() {
                 );
               })}
             </Stack>
-            <Box
-              sx={{
-                width: { md: "120px", lg: "140px" },
-                height: { md: "35px", lg: "50px" },
-                backgroundColor: "var(--white-text)",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                border: "1px solid var(--icon-color)",
-                borderRadius: "3px",
-                cursor: "pointer",
-                transition: "all 0.3s ease-in-out",
-                "&:hover": {
-                  backgroundColor: "var(--icon-color)",
-                  borderColor: "var(--icon-color)",
-                  "& .hover-text": {
-                    color: "var(--white-text)",
-                  },
-                },
-              }}
-              onClick={() => navigate("/login")}
-            >
-              <Typography
-                className="hover-text"
+            {users ? (
+              <Box
                 sx={{
-                  fontSize: "var(--font-sm)",
-                  fontFamily: "var(--font-family-montserrat)",
-                  fontWeight: 600,
-                  color: "var(--bg-color)",
-                  transition: "color 0.3s ease-in-out",
+                  width: { md: "120px", lg: "120px" },
+                  height: { md: "35px", lg: "40px" },
+                  backgroundColor: "var(--icon-color)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  border: "1px solid var(--icon-color)",
+                  borderRadius: "3px",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: "var(--white-text)",
+                    borderColor: "var(--icon-color)",
+                    "& .hover-text": {
+                      color: "var(--bg-color)",
+                    },
+                  },
                 }}
+                // onClick={() => navigate("/login")}
               >
-                Login Now
-              </Typography>
-            </Box>
+                <Typography
+                  className="hover-text"
+                  sx={{
+                    fontSize: "var(--font-sm)",
+                    fontFamily: "var(--font-family-montserrat)",
+                    fontWeight: 600,
+                    color: "var(--white-text)",
+                    transition: "color 0.3s ease-in-out",
+                  }}
+                >
+                  Dashboard
+                </Typography>
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  width: { md: "120px", lg: "140px" },
+                  height: { md: "35px", lg: "50px" },
+                  backgroundColor: "var(--white-text)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  border: "1px solid var(--icon-color)",
+                  borderRadius: "3px",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease-in-out",
+                  "&:hover": {
+                    backgroundColor: "var(--icon-color)",
+                    borderColor: "var(--icon-color)",
+                    "& .hover-text": {
+                      color: "var(--white-text)",
+                    },
+                  },
+                }}
+                onClick={() => navigate("/login")}
+              >
+                <Typography
+                  className="hover-text"
+                  sx={{
+                    fontSize: "var(--font-sm)",
+                    fontFamily: "var(--font-family-montserrat)",
+                    fontWeight: 600,
+                    color: "var(--bg-color)",
+                    transition: "color 0.3s ease-in-out",
+                  }}
+                >
+                  Login Now
+                </Typography>
+              </Box>
+            )}
           </>
         )}
       </Box>

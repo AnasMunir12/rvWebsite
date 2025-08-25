@@ -11,10 +11,15 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import { useTheme } from "@mui/material/styles";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../../store/slices/RvConsignment";
 
 function Navbar() {
+  const dispatch = useDispatch();
+
+  const users = useSelector((state) => state.rvConsignment.users);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -138,20 +143,16 @@ function Navbar() {
             "linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.9) 100%)",
         }}
       >
-        {/* Inner container with shrinkable width */}
         <Box
           sx={{
             width: "100%",
-            maxWidth: { xs: "100%", sm: "800px", md: "100%", lg: "100%" }, // 👈 shrink limit
-            // px: { xs: 2, sm: 4, md: 6 }, // responsive padding
+            maxWidth: { xs: "100%", sm: "800px", md: "100%", lg: "100%" },
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
           }}
         >
-          <Box display="flex" alignItems="center" flex={1}>
-            {/* Left side for logo if needed */}
-          </Box>
+          <Box display="flex" alignItems="center" flex={1}></Box>
 
           {isMobile ? (
             <IconButton onClick={() => setOpenDrawer(true)}>
@@ -196,24 +197,32 @@ function Navbar() {
                 );
               })}
 
+              {/* Login/Dashboard Button */}
               <Box
-                onClick={() => navigate("/login")}
+                onClick={() => {
+                  navigate(users ? "/dashboard/overview" : "/login");
+                  setOpenDrawer(false);
+                }}
                 sx={{
-                  px: 3,
-                  py: 1.5,
+                  px: 2.5,
+                  py: 1,
                   border: "1px solid var(--icon-color)",
                   borderRadius: "3px",
-                  backgroundColor: "var(--white-text)",
+                  backgroundColor: users
+                    ? "var(--icon-color)"
+                    : "var(--white-text)",
                   cursor: "pointer",
                   transition: "all 0.3s ease-in-out",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   "&:hover": {
-                    backgroundColor: "var(--icon-color)",
+                    backgroundColor: users
+                      ? "var(--white-text)"
+                      : "var(--icon-color)",
                     borderColor: "var(--icon-color)",
                     "& .hover-text": {
-                      color: "var(--white-text)",
+                      color: users ? "var(--icon-color)" : "var(--white-text)",
                     },
                   },
                 }}
@@ -224,11 +233,11 @@ function Navbar() {
                     fontSize: "var(--font-sm)",
                     fontWeight: 600,
                     fontFamily: "var(--font-family-montserrat)",
-                    color: "var(--bg-color)",
+                    color: users ? "var(--white-text)" : "var(--bg-color)",
                     transition: "color 0.3s ease-in-out",
                   }}
                 >
-                  Login Now
+                  {users ? "Dashboard" : "Login Now"}
                 </Typography>
               </Box>
             </Box>
@@ -244,24 +253,129 @@ function Navbar() {
       >
         <Box
           sx={{
+            width: "100%",
+            height: 40,
+            bgcolor: "var(--bg-color)",
+            display: {
+              "@media (max-width:760px)": {
+                display: "none",
+              },
+              sm: "flex",
+            },
+            justifyContent: "space-between",
+            alignItems: "center",
+            px: { sm: 4, md: 10, lg: 15 },
+            py: 0.5,
+            zIndex: 1200,
+          }}
+        >
+          <Box display="flex" alignItems="center" gap={2}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Box
+                component="img"
+                src="/images/icons/callIcon.svg"
+                alt="Call"
+              />
+              <Typography
+                sx={{
+                  color: "var(--white-text)",
+                  fontSize: "14px",
+                  fontFamily: "var(--font-family-hind)",
+                }}
+              >
+                Call on : (+62) 134 567 891
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Box
+                component="img"
+                src="/images/icons/mailIcon.svg"
+                alt="Email"
+              />
+              <Typography
+                sx={{
+                  color: "var(--white-text)",
+                  fontSize: "14px",
+                  fontFamily: "var(--font-family-hind)",
+                }}
+              >
+                kamperven@domain.com
+              </Typography>
+            </Box>
+          </Box>
+
+          <Stack
+            direction="row"
+            gap={2}
+            divider={
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ borderColor: "#fff" }}
+              />
+            }
+          >
+            <Box
+              component="img"
+              src="/images/icons/facebook.svg"
+              alt="Facebook"
+              sx={{ width: 25, cursor: "pointer" }}
+            />
+            <Box
+              component="img"
+              src="/images/icons/twitter.svg"
+              alt="Twitter"
+              sx={{ width: 25, cursor: "pointer" }}
+            />
+            <Box
+              component="img"
+              src="/images/icons/youtube.svg"
+              alt="YouTube"
+              sx={{ width: 18, cursor: "pointer" }}
+            />
+            <Box
+              component="img"
+              src="/images/icons/instagram.svg"
+              alt="Instagram"
+              sx={{ width: 18, cursor: "pointer" }}
+            />
+          </Stack>
+        </Box>
+        <Box
+          sx={{
             width: "100vw",
             height: "100vh",
-            bgcolor: "var(--bg-color)",
+            bgcolor: "#1a1a1a",
             p: 3,
             display: "flex",
             flexDirection: "column",
             gap: 3,
           }}
         >
-          <Box display="flex" justifyContent="flex-end">
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems={"center"}
+          >
+            <Typography
+              sx={{
+                color: "var(--icon-color)",
+                fontSize: "var(--font-basic)",
+                fontWeight: 700,
+                fontFamily: "var(--font-family-montserrat)",
+                textTransform: "uppercase",
+              }}
+            >
+              RV
+            </Typography>
             <IconButton onClick={() => setOpenDrawer(false)}>
               <CloseIcon sx={{ color: "white" }} />
             </IconButton>
           </Box>
 
-          <Box
+          {/* <Box
             onClick={() => {
-              navigate("/login");
+              navigate(users ? "/dashboard/overview" : "/login");
               setOpenDrawer(false);
             }}
             sx={{
@@ -284,33 +398,36 @@ function Navbar() {
                 color: "var(--bg-color)",
               }}
             >
-              Login Now
+              {users ? "Dashboard" : "Login Now"}
             </Typography>
-          </Box>
+          </Box> */}
 
           <Stack direction="column" spacing={3} mt={2}>
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                style={{ textDecoration: "none" }}
-                onClick={() => setOpenDrawer(false)}
-              >
-                <Typography
-                  sx={{
-                    color: "var(--white-text)",
-                    fontSize: "var(--font-sm)",
-                    fontWeight: 400,
-                    fontFamily: "var(--font-family-montserrat)",
-                    "&:hover": {
-                      color: "var(--icon-color)",
-                    },
-                  }}
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.name}
+                  to={link.path}
+                  style={{ textDecoration: "none" }}
+                  onClick={() => setOpenDrawer(false)}
                 >
-                  {link.name}
-                </Typography>
-              </Link>
-            ))}
+                  <Typography
+                    sx={{
+                      color: isActive
+                        ? "var(--icon-color)"
+                        : "var(--white-text)",
+                      fontWeight: isActive ? 700 : 400,
+                      fontSize: "var(--font-md)",
+                      fontFamily: "var(--font-family-montserrat)",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {link.name}
+                  </Typography>
+                </Link>
+              );
+            })}
           </Stack>
         </Box>
       </Drawer>

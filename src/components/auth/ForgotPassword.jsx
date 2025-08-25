@@ -6,15 +6,47 @@ import {
   InputAdornment,
   IconButton,
   Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import React, { useState } from "react";
 import EmailIcon from "@mui/icons-material/Email";
 import ReplyOutlinedIcon from "@mui/icons-material/ReplyOutlined";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const users = useSelector((state) => state.rvConsignment.users);
+
+  const handleResetPassword = () => {
+    const founduser = users.find((u) => u.email === email);
+
+    if (founduser) {
+      setSnackbar({
+        open: true,
+        message: "Password link sent to your email",
+        severity: "success",
+      });
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    } else {
+      setSnackbar({
+        open: true,
+        message: "No account found with this email ❌",
+        severity: "error",
+      });
+    }
+  };
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -181,11 +213,13 @@ function ForgotPassword() {
             >
               <Button
                 variant="contained"
+                onClick={handleResetPassword}
                 sx={{
                   color: "var(--white-text)",
                   bgcolor: "var(--icon-color)",
                   width: "60%",
                 }}
+                disabled={!email}
               >
                 Reset Password
               </Button>
@@ -227,6 +261,22 @@ function ForgotPassword() {
               </Typography>
             </Box>
           </Box>
+
+          {/* ✅ Snackbar Feedback */}
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={4000}
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          >
+            <Alert
+              severity={snackbar.severity}
+              variant="filled"
+              onClose={() => setSnackbar({ ...snackbar, open: false })}
+            >
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
         </Grid>
       </Grid>
     </Box>

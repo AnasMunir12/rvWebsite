@@ -38,10 +38,10 @@ export default function DashboardLayout({ children }) {
             sx={{
               display: "flex",
               justifyContent: "space-between",
-              px: 3,
-              py: 5,
-              gap: 4,
-              backgroundColor: "#3333335E",
+              px: 2,
+              py: 2,
+              gap: 2,
+              // backgroundColor: "#3333335E",
               border: "1px solid #FFFFFF38",
               borderRadius: "20px",
             }}
@@ -50,12 +50,12 @@ export default function DashboardLayout({ children }) {
             {!isMobile && (
               <Box
                 sx={{
-                  width: isCollapsed ? "80px" : "18%",
-                  minWidth: isCollapsed ? "80px" : "auto",
+                  width: isCollapsed ? "80px" : "300px",
+                  // minWidth: isCollapsed ? "80px" : "auto",
                   transition: "width 0.3s ease",
                   alignSelf: "flex-start", // Important
                   position: "sticky",
-                  top: 0, // Stick to top of viewport
+                  top: "100px",
                   height: "100vh", // Full height of screen
                 }}
               >

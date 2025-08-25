@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 
 import { websiteRoutes } from "./routes/websiteRoutes";
 import { authRoutes } from "./routes/authRoutes";
@@ -7,12 +7,14 @@ import { adminRoutes } from "./routes/adminRoutes";
 
 function App() {
   return (
-    <Routes>
-      {websiteRoutes}
-      {authRoutes}
-      {dashboardRoutes}
-      {adminRoutes}
-    </Routes>
+    <BrowserRouter>
+      <Routes>
+        {websiteRoutes}
+        {authRoutes}
+        {dashboardRoutes}
+        {adminRoutes}
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -9,6 +9,8 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useDispatch } from "react-redux";
+import { logoutUser } from "../../store/slices/RvConsignment";
 
 function Sidebar({
   isCollapsed,
@@ -16,6 +18,7 @@ function Sidebar({
   isMobile,
   handleDrawerToggle,
 }) {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const isTablet = useMediaQuery("(max-width:1200px) and (min-width:900px)");
@@ -45,6 +48,7 @@ function Sidebar({
       icon: "/images/sidebar/logouticon.svg",
       text: "Logout",
       path: "/dashboard/logout",
+      isLogout: true,
     },
   ];
 
@@ -58,6 +62,13 @@ function Sidebar({
     }
   };
 
+  const handleLogout = () => {
+    dispatch(logoutUser()); // clear redux state
+    localStorage.removeItem("auth"); // if you store token/user in localStorage
+    if (isMobile) handleDrawerToggle();
+    navigate("/login");
+  };
+
   return (
     <Box
       sx={{
@@ -66,8 +77,8 @@ function Sidebar({
         bgcolor: "black",
         boxShadow: "0px 15px 40px -5px #0000001A",
         borderRadius: "10px",
-        width: "100%",
-        height: "auto",
+        width: isCollapsed ? "100%" : "15rem",
+        height: "100%",
         position: "relative",
         px: isCollapsed ? 2 : 2,
         py: 3,
@@ -95,8 +106,7 @@ function Sidebar({
           </IconButton>
         </Box>
       )}
-
-      {/* Collapse Toggle (Desktop Only) */}
+      {/* Collapse Toggle (Desktop Only)
       {!isMobile && (
         <IconButton
           onClick={handleCollapseToggle}
@@ -118,8 +128,7 @@ function Sidebar({
         >
           {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
         </IconButton>
-      )}
-
+      )} */}
       {/* Profile Image */}
       <Box
         sx={{
@@ -169,7 +178,6 @@ function Sidebar({
           </IconButton>
         )}
       </Box>
-
       {/* User Name */}
       {!isCollapsed && (
         <Typography
@@ -184,62 +192,124 @@ function Sidebar({
           Donald Hansen
         </Typography>
       )}
-
       <Divider sx={{ width: "100%", borderTop: "1px dashed gray", my: 2 }} />
-
       {/* Navigation Links */}
-      <Box display="flex" flexDirection="column" gap={1} width="100%">
-        {data.map((link, index) => {
-          const isActive = location.pathname === link.path;
-
-          return (
-            <Box
-              key={index}
-              sx={{
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                gap: isCollapsed ? 0 : 2,
-                p: "13px",
-                borderRadius: "8px",
-                backgroundColor: isActive ? "var(--icon-color)" : "transparent",
-                justifyContent: isCollapsed ? "center" : "flex-start",
-                "&:hover": {
-                  backgroundColor: "#282828",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  transition: "all 0.3s",
-                },
-              }}
-              onClick={() => {
-                if (isMobile) handleDrawerToggle();
-                if (link.text === "Logout") {
-                  navigate("/login");
-                } else {
-                  navigate(link.path);
-                }
-              }}
-            >
-              <Box
-                component="img"
-                src={link.icon}
-                alt={link.text}
-                sx={{ width: "18px", height: "18px" }}
-              />
-              {!isCollapsed && (
-                <Typography
+      {/* Navigation Links */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          width: "200px",
+        }}
+      >
+        {/* Top links (except Logout) */}
+        <Box
+          display="flex"
+          flexDirection="column"
+          gap={1}
+          sx={{
+            width: isCollapsed ? "100px" : "100%",
+          }}
+        >
+          {data
+            .filter((link) => !link.isLogout)
+            .map((link, index) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Box
+                  key={index}
                   sx={{
-                    color: "var(--white-text)",
-                    fontSize: "var(--font-sm)",
-                    fontWeight: 500,
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: isCollapsed ? 0 : 2,
+                    p: "13px",
+                    borderRadius: "8px",
+                    backgroundColor: isActive
+                      ? "var(--icon-color)"
+                      : "transparent",
+                    justifyContent: isCollapsed ? "center" : "flex-start",
+                    "&:hover": {
+                      backgroundColor: isActive
+                        ? "var(--icon-color)"
+                        : "#282828",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      transition: "all 0.3s",
+                    },
+                  }}
+                  onClick={() => {
+                    if (isMobile) handleDrawerToggle();
+                    navigate(link.path);
                   }}
                 >
-                  {link.text}
-                </Typography>
-              )}
-            </Box>
-          );
-        })}
+                  <Box
+                    component="img"
+                    src={link.icon}
+                    alt={link.text}
+                    sx={{ width: "18px", height: "18px" }}
+                  />
+                  {!isCollapsed && (
+                    <Typography
+                      sx={{
+                        color: "var(--white-text)",
+                        fontSize: "var(--font-sm)",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {link.text}
+                    </Typography>
+                  )}
+                </Box>
+              );
+            })}
+        </Box>
+
+        {/* Logout button in the last*/}
+        <Box sx={{ mt: "auto" }}>
+          {data
+            .filter((link) => link.isLogout) // sirf logout
+            .map((link, index) => (
+              <Box
+                key={index}
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: isCollapsed ? 0 : 2,
+                  p: "13px",
+                  borderRadius: "8px",
+                  justifyContent: isCollapsed ? "center" : "flex-start",
+                  "&:hover": {
+                    backgroundColor: "#282828",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    transition: "all 0.3s",
+                  },
+                }}
+                onClick={handleLogout}
+              >
+                <Box
+                  component="img"
+                  src={link.icon}
+                  alt={link.text}
+                  sx={{ width: "18px", height: "18px" }}
+                />
+                {!isCollapsed && (
+                  <Typography
+                    sx={{
+                      color: "var(--white-text)",
+                      fontSize: "var(--font-sm)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {link.text}
+                  </Typography>
+                )}
+              </Box>
+            ))}
+        </Box>
       </Box>
     </Box>
   );

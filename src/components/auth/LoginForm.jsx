@@ -9,6 +9,9 @@ import {
   OutlinedInput,
   IconButton,
   Button,
+  FormHelperText,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -21,6 +24,8 @@ import * as Yup from "yup";
 function LoginForm() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   // ✅ get registered users from redux
   const users = useSelector((state) => state.rvConsignment.users);
@@ -42,8 +47,10 @@ function LoginForm() {
     );
 
     if (foundUser) {
-      alert(`Welcome ${foundUser.fullName || "User"}!`);
-      navigate("/dashboard"); // change route as needed
+      setOpenSnackbar(true); // ✅ show success snackbar
+      setTimeout(() => {
+        navigate("/dashboard"); // redirect after short delay
+      }, 1500);
     } else {
       setErrors({ email: "Invalid email or password" });
     }
@@ -173,7 +180,25 @@ function LoginForm() {
                       onChange={handleChange}
                       onBlur={handleBlur}
                       error={touched.email && Boolean(errors.email)}
-                      helperText={touched.email && errors.email}
+                      helperText={
+                        touched.email &&
+                        errors.email && (
+                          <FormHelperText error>
+                            <Typography
+                              variant="caption"
+                              color="error"
+                              sx={{
+                                display: "block",
+                                textAlign: "start",
+                                ml: -3,
+                                mt: -0.5,
+                              }}
+                            >
+                              {errors.email}
+                            </Typography>
+                          </FormHelperText>
+                        )
+                      }
                       sx={{ width: "60%" }}
                       InputProps={{
                         startAdornment: (
@@ -189,6 +214,7 @@ function LoginForm() {
                       sx={{ width: "60%" }}
                       size="small"
                       variant="outlined"
+                      error={touched.password && Boolean(errors.password)}
                     >
                       <OutlinedInput
                         name="password"
@@ -197,7 +223,6 @@ function LoginForm() {
                         value={values.password}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={touched.password && Boolean(errors.password)}
                         startAdornment={
                           <InputAdornment position="start">
                             <LockIcon sx={{ color: "var(--icon-color)" }} />
@@ -220,18 +245,23 @@ function LoginForm() {
                           </InputAdornment>
                         }
                       />
+                      {/* ✅ Correct error display */}
+                      {touched.password && errors.password && (
+                        <FormHelperText error>
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            sx={{
+                              display: "block",
+                              textAlign: "start",
+                              ml: -1.5,
+                            }}
+                          >
+                            {errors.password}
+                          </Typography>
+                        </FormHelperText>
+                      )}
                     </FormControl>
-                    {touched.password && errors.password && (
-                      <Typography
-                        sx={{
-                          color: "red",
-                          fontSize: "0.8rem",
-                          textAlign: "start",
-                        }}
-                      >
-                        {errors.password}
-                      </Typography>
-                    )}
                   </Box>
 
                   {/* Login Button */}
@@ -291,6 +321,23 @@ function LoginForm() {
                 </Form>
               )}
             </Formik>
+
+            {/* Snackbar Success Alert */}
+            <Snackbar
+              open={openSnackbar}
+              autoHideDuration={5000}
+              onClose={() => setOpenSnackbar(false)}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <Alert
+                onClose={() => setOpenSnackbar(false)}
+                severity="success"
+                variant="filled"
+                sx={{ width: "100%" }}
+              >
+                Login successful
+              </Alert>
+            </Snackbar>
           </Box>
         </Grid>
       </Grid>

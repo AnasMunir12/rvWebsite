@@ -1,17 +1,28 @@
-import { Box, Grid, IconButton, Typography, Rating } from "@mui/material";
+import {
+  Box,
+  Grid,
+  IconButton,
+  Typography,
+  Rating,
+  useMediaQuery,
+  Button,
+} from "@mui/material";
 import React from "react";
 import Avatar from "@mui/material/Avatar";
 import AvatarGroup from "@mui/material/AvatarGroup";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function Banner() {
   const navigate = useNavigate();
+  const users = useSelector((state) => state.rvConsignment.users);
+  const isMobile = useMediaQuery("(max-width:900px)");
 
   return (
     <>
       <Box sx={{ height: "100%" }}>
-        <Grid container sx={{ position: "relative" }}>
-          <Grid size={{ xs: 12, lg: 5 }}>
+        <Grid container sx={{ position: "relative" }} alignItems={"stretch"}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <Box
               sx={{
                 bgcolor: "var(--bg-color)",
@@ -26,7 +37,7 @@ function Banner() {
                 pl: { xs: 2, sm: 10 },
                 pr: 4,
                 gap: 1,
-                py: { xs: 10, md: 8, lg: 0 },
+                py: { xs: 10, md: 8, lg: 30 },
               }}
             >
               <Box
@@ -206,16 +217,54 @@ function Banner() {
               </Box>
             </Box>
           </Grid>
-          <Grid size={{ xs: 12, lg: 7 }}>
+          <Grid size={{ xs: 12, md: 7 }}>
             <Box
-              component="img"
-              src="/images/landingpage/banner.png"
               sx={{
+                position: "relative",
                 width: "100%",
                 height: { xs: "500px", sm: "100%" },
-                objectFit: "cover",
               }}
-            />
+            >
+              {/* Image */}
+              <Box
+                component="img"
+                src="/images/landingpage/banner.png"
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+
+              {/* Button Overlay */}
+              {isMobile && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "flex-start",
+                    pt: 3,
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    sx={{
+                      bgcolor: "var(--icon-color)",
+                      color: "white",
+                      "&:hover": { bgcolor: "var(--icon-color)" },
+                    }}
+                    onClick={() => navigate(users ? "/dashboard" : "/login")}
+                  >
+                    {users ? "Dashboard" : "Login"}
+                  </Button>
+                </Box>
+              )}
+            </Box>
           </Grid>
         </Grid>
       </Box>

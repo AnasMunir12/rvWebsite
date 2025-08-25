@@ -10,13 +10,13 @@ import Footer from "../footer/Footer";
 function LandingPage() {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Banner />
       <Container />
       <Future />
       <Process />
       <Touch />
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

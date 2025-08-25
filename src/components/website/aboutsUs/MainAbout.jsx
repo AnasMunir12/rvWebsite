@@ -9,12 +9,12 @@ import Footer from "../footer/Footer";
 function MainAbout() {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Banner />
       <Container />
       <Chooseus />
       <Value />
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

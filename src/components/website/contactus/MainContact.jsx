@@ -8,11 +8,11 @@ import Footer from "../footer/Footer";
 function MainContact() {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Banner />
       <Container />
       <From />
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }
