@@ -4,8 +4,8 @@ import {
   IconButton,
   Typography,
   Rating,
-  useMediaQuery,
   Button,
+  useMediaQuery,
 } from "@mui/material";
 import React from "react";
 import Avatar from "@mui/material/Avatar";
@@ -21,11 +21,11 @@ function Banner() {
   return (
     <>
       <Box sx={{ height: "100%" }}>
-        <Grid container sx={{ position: "relative" }} alignItems={"stretch"}>
-          <Grid size={{ xs: 12, md: 5 }}>
+        <Grid container sx={{ position: "relative" }}>
+          <Grid size={{ xs: 12, lg: 5 }}>
             <Box
               sx={{
-                bgcolor: "var(--bg-color)",
+                background: "url(/images/background.png)",
                 height: { xs: "auto", md: "100%" },
                 width: { xs: "100%", md: "40%", lg: "45%", xl: "50%" },
                 position: { xs: "revert", md: "absolute" },
@@ -37,7 +37,7 @@ function Banner() {
                 pl: { xs: 2, sm: 10 },
                 pr: 4,
                 gap: 1,
-                py: { xs: 10, md: 8, lg: 30 },
+                py: { xs: 10, md: 8, lg: 0 },
               }}
             >
               <Box
@@ -217,7 +217,7 @@ function Banner() {
               </Box>
             </Box>
           </Grid>
-          <Grid size={{ xs: 12, md: 7 }}>
+          <Grid size={{ xs: 12, lg: 7 }}>
             <Box
               sx={{
                 position: "relative",

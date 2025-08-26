@@ -417,7 +417,7 @@
 // }
 
 // export default SignupForm;
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Grid,
@@ -428,7 +428,6 @@ import {
   Button,
   Snackbar,
   Alert,
-  CircularProgress,
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -437,45 +436,17 @@ import PersonIcon from "@mui/icons-material/Person";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
-import { signupUser } from "../redux/slices/rvConsignmentSlice";
 import { useNavigate } from "react-router-dom";
+import { signupUser } from "../../store/slices/RvConsignment";
 
 function SignupForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { loading, error } = useSelector((state) => state.rvConsignment);
 
-  // Redux state
-  const { loading, error, users } = useSelector(
-    (state) => state.rvConsignmentslice
-  );
-
-  const [formData, setFormData] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  // Local states
   const [showPassword, setShowPassword] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [submittedData, setSubmittedData] = useState(null);
 
-  // ✅ useEffect to call dispatch after form submission
-  // 🔹 Trigger API when formData updates
-  useEffect(() => {
-    if (isSubmitting && formData) {
-      dispatch(signupUser(formData)).finally(() => setIsSubmitting(false));
-    }
-  }, [isSubmitting, formData, dispatch]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const data = {
-      name: e.target.name.value,
-      email: e.target.email.value,
-      password: e.target.password.value,
-    };
-    setFormData(data);
-    setIsSubmitting(true); // ✅ triggers useEffect
-  };
-
-  // Formik setup
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -489,43 +460,44 @@ function SignupForm() {
         .min(6, "Password must be at least 6 characters")
         .required("Password is required"),
     }),
-    onSubmit: (values) => {
-      const userData = {
-        name: values.name,
-        email: values.email,
-        password: values.password,
-      };
-      setSubmittedData(userData); // 🚀 Trigger useEffect
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        const resultAction = await dispatch(signupUser(values));
+        if (signupUser.fulfilled.match(resultAction)) {
+          setSuccess(true);
+          resetForm();
+          setTimeout(() => navigate("/login"), 2000);
+        }
+      } catch (err) {
+        console.error("Signup failed:", err);
+      }
     },
   });
 
   return (
     <Box
       sx={{
-        width: "100%",
-        maxWidth: 400,
-        mx: "auto",
-        mt: 5,
-        p: 3,
-        boxShadow: 3,
+        bgcolor: "#fff",
+        p: 4,
         borderRadius: 2,
-        bgcolor: "background.paper",
+        boxShadow: 3,
+        maxWidth: 500,
+        mx: "auto",
+        mt: 8,
       }}
     >
-      <Typography variant="h5" align="center" gutterBottom>
+      <Typography variant="h5" fontWeight="bold" mb={3} align="center">
         Signup
       </Typography>
 
-      {/* Form */}
       <form onSubmit={formik.handleSubmit}>
         <Grid container spacing={2}>
           {/* Name */}
           <Grid item xs={12}>
             <TextField
               fullWidth
-              id="name"
               name="name"
-              placeholder="Enter your name"
+              label="Full Name"
               value={formik.values.name}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
@@ -545,9 +517,9 @@ function SignupForm() {
           <Grid item xs={12}>
             <TextField
               fullWidth
-              id="email"
               name="email"
-              placeholder="Enter your email"
+              label="Email"
+              type="email"
               value={formik.values.email}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
@@ -567,9 +539,8 @@ function SignupForm() {
           <Grid item xs={12}>
             <TextField
               fullWidth
-              id="password"
               name="password"
-              placeholder="Enter your password"
+              label="Password"
               type={showPassword ? "text" : "password"}
               value={formik.values.password}
               onChange={formik.handleChange}
@@ -584,10 +555,7 @@ function SignupForm() {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                    >
+                    <IconButton onClick={() => setShowPassword(!showPassword)}>
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
@@ -596,14 +564,13 @@ function SignupForm() {
             />
           </Grid>
 
-          {/* Submit button */}
+          {/* Submit Button */}
           <Grid item xs={12}>
             <Button
-              fullWidth
               type="submit"
+              fullWidth
               variant="contained"
               disabled={loading}
-              sx={{ py: 1.2 }}
             >
               {loading ? "Signing up..." : "Signup"}
             </Button>
@@ -611,24 +578,28 @@ function SignupForm() {
         </Grid>
       </form>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {users.length > 0 && (
-        <p>User registered: {users[users.length - 1].email}</p>
-      )}
-
-      {/* Alerts */}
+      {/* Snackbar for success */}
       <Snackbar
         open={success}
         autoHideDuration={3000}
         onClose={() => setSuccess(false)}
       >
         <Alert severity="success" onClose={() => setSuccess(false)}>
-          Signup successful! Redirecting...
+          Signup successful! Redirecting to login...
         </Alert>
       </Snackbar>
 
-      <Snackbar open={!!error} autoHideDuration={4000} onClose={() => {}}>
-        <Alert severity="error">{error}</Alert>
+      {/* Snackbar for error */}
+      <Snackbar
+        open={!!error}
+        autoHideDuration={3000}
+        onClose={() => {}} // keep error open until new action
+      >
+        <Alert severity="error">
+          {typeof error === "string"
+            ? error
+            : error?.message || error?.error || "Signup failed!"}
+        </Alert>
       </Snackbar>
     </Box>
   );
