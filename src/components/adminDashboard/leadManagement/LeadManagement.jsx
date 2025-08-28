@@ -14,7 +14,7 @@ import {
   MenuItem,
   List,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -31,6 +31,7 @@ import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 
 import usePagination from "@mui/material/usePagination";
+import { getLeads } from "../../../serviceApi/fieldsApi";
 
 const columns = [
   {
@@ -49,7 +50,7 @@ const columns = [
     id: "submitDate",
     label: "Submitted Date",
     minWidth: 170,
-    align: "right",
+    align: "center",
   },
   {
     id: "status",
@@ -66,6 +67,36 @@ const columns = [
 ];
 
 function LeadManagement() {
+  const [rowsSet, setRows] = useState([]);
+  const [page, setPage] = useState(0); // 👉 keep 0-based for table
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
+  // fetch leads from API
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        const res = await getLeads(page + 1, rowsPerPage); // API is 1-based
+        const { leads, pagination } = res.data.data;
+
+        // format API data to match your table columns
+        const formatted = leads.map((lead) => ({
+          lead: { name: lead._id, icon: "/images/admin/overview/1.svg" }, // replace with real icon if API has it
+          mail: lead.contact?.email || "-",
+          submitDate: new Date(lead.formSubmittedAt).toLocaleDateString(),
+          status: lead.status,
+          actions: "",
+        }));
+
+        setRows(formatted);
+        setTotalPages(pagination.totalPages);
+      } catch (err) {
+        console.error("Error fetching leads:", err);
+      }
+    };
+
+    fetchLeads();
+  }, [page, rowsPerPage]);
   // Setup pagination hook
 
   const handleChangePage = (event, newPage) => {
@@ -180,12 +211,10 @@ function LeadManagement() {
   }));
 
   // Now that rows is defined, we can use it in usePagination
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const { items } = usePagination({
-    count: Math.ceil(rows.length / rowsPerPage),
-    page: page + 1, // usePagination is 1-based
+    count: totalPages,
+    page: page + 1, // pagination is 1-based
     onChange: (e, value) => handleChangePage(e, value - 1),
   });
 
@@ -333,129 +362,132 @@ function LeadManagement() {
                     </TableHead>
 
                     <TableBody>
-                      {rows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => (
-                          <TableRow
-                            key={index}
-                            sx={{
-                              "&:hover": {
-                                backgroundColor: "transparent !important",
-                                boxShadow:
-                                  "0.83px 14.09px 36.47px 0px #03022912",
-                                cursor: "pointer",
-                              },
-                            }}
-                          >
-                            {columns.map((column) => (
-                              <TableCell
-                                key={column.id}
-                                align={column.align}
-                                sx={{
-                                  border: "none",
-                                  fontSize: "var(--font-sm)",
-                                  fontFamily: "var(--font-family-montserrat)",
-                                  color: "#6F757E",
-                                  py: 1.5,
-                                  "&:hover": {
-                                    backgroundColor: "inherit",
-                                  },
-                                  "&:first-of-type": {
-                                    borderTopLeftRadius: "0.518rem",
-                                    borderBottomLeftRadius: "0.518rem",
-                                  },
-                                  "&:last-of-type": {
-                                    borderTopRightRadius: "0.518rem",
-                                    borderBottomRightRadius: "0.518rem",
-                                  },
-                                }}
-                              >
-                                {column.id === "lead" ? (
-                                  <Box
+                      {rowsSet.map((row, index) => (
+                        <TableRow
+                          key={index}
+                          sx={{
+                            "&:hover": {
+                              backgroundColor: "transparent !important",
+                              boxShadow: "0.83px 14.09px 36.47px 0px #03022912",
+                              cursor: "pointer",
+                            },
+                          }}
+                        >
+                          {columns.map((column) => (
+                            <TableCell
+                              key={column.id}
+                              align={column.align}
+                              sx={{
+                                border: "none",
+                                fontSize: "var(--font-xs)",
+                                fontFamily: "var(--font-family-montserrat)",
+                                color: "#6F757E",
+                                py: 1.5,
+                                "&:hover": {
+                                  backgroundColor: "inherit",
+                                },
+                                "&:first-of-type": {
+                                  borderTopLeftRadius: "0.518rem",
+                                  borderBottomLeftRadius: "0.518rem",
+                                },
+                                "&:last-of-type": {
+                                  borderTopRightRadius: "0.518rem",
+                                  borderBottomRightRadius: "0.518rem",
+                                },
+                              }}
+                            >
+                              {column.id === "lead" ? (
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                  }}
+                                >
+                                  {/* <img
+                                    src={row.lead.icon}
+                                    width={25}
+                                    height={25}
+                                    alt=""
+                                  /> */}
+                                  <Typography
                                     sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 1,
+                                      fontSize: "var(--font-xs)",
+                                      fontFamily:
+                                        "var(--font-family-montserrat)",
+                                      color: "#6F757E",
                                     }}
                                   >
-                                    <img
-                                      src={row.lead.icon}
-                                      width={25}
-                                      height={25}
-                                      alt=""
-                                    />
-                                    <Typography>{row.lead.name}</Typography>
-                                  </Box>
-                                ) : column.id === "status" ? (
-                                  <Box
+                                    {row.lead.name}
+                                  </Typography>
+                                </Box>
+                              ) : column.id === "status" ? (
+                                <Box
+                                  sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                    border:
+                                      row.status === "Pending review"
+                                        ? "0.5px solid #F0A837"
+                                        : row.status === "Completed"
+                                        ? "0.5px solid #28803D"
+                                        : "0.5px solid #ccc",
+                                    borderRadius: "5px",
+                                    px: 1,
+                                    py: 0.5,
+                                  }}
+                                >
+                                  <ArrowDropDownOutlinedIcon
                                     sx={{
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      gap: 0.5,
-                                      border:
+                                      fontSize: "1rem",
+                                      color:
                                         row.status === "Pending review"
-                                          ? "0.5px solid #F0A837"
+                                          ? "#F0A837"
                                           : row.status === "Completed"
-                                          ? "0.5px solid #28803D"
-                                          : "0.5px solid #ccc",
-                                      borderRadius: "5px",
-                                      px: 1,
-                                      py: 0.5,
+                                          ? "#28803D"
+                                          : "#ccc",
                                     }}
-                                  >
-                                    <ArrowDropDownOutlinedIcon
-                                      sx={{
-                                        fontSize: "1rem",
-                                        color:
-                                          row.status === "Pending review"
-                                            ? "#F0A837"
-                                            : row.status === "Completed"
-                                            ? "#28803D"
-                                            : "#ccc",
-                                      }}
-                                    />
-                                    <Typography
-                                      sx={{
-                                        color:
-                                          row.status === "Pending review"
-                                            ? "#F0A837"
-                                            : row.status === "Completed"
-                                            ? "#28803D"
-                                            : "#ccc",
-                                        fontSize: "var(--font-sm)",
-                                        fontFamily:
-                                          "var(--font-family-montserrat)",
-                                        fontWeight: 500,
-                                        whiteSpace: "nowrap",
-                                      }}
-                                    >
-                                      {row.status}
-                                    </Typography>
-                                  </Box>
-                                ) : column.id === "actions" ? (
-                                  <IconButton
-                                    onClick={handleclick}
-                                    size="small"
+                                  />
+                                  <Typography
                                     sx={{
-                                      "&:hover": {
-                                        bgcolor: "var(--icon-color)",
-                                        color: "black",
-                                        borderRadius: "0.5rem",
-                                      },
+                                      color:
+                                        row.status === "Pending review"
+                                          ? "#F0A837"
+                                          : row.status === "Completed"
+                                          ? "#28803D"
+                                          : "#ccc",
+                                      fontSize: "var(--font-sm)",
+                                      fontFamily:
+                                        "var(--font-family-montserrat)",
+                                      fontWeight: 500,
+                                      whiteSpace: "nowrap",
                                     }}
                                   >
-                                    <MoreHorizOutlinedIcon />
-                                  </IconButton>
-                                ) : (
-                                  row[column.id]
-                                )}
-                              </TableCell>
-                            ))}
-                          </TableRow>
-                        ))}
+                                    {row.status}
+                                  </Typography>
+                                </Box>
+                              ) : column.id === "actions" ? (
+                                <IconButton
+                                  onClick={handleclick}
+                                  size="small"
+                                  sx={{
+                                    "&:hover": {
+                                      bgcolor: "var(--icon-color)",
+                                      color: "black",
+                                      borderRadius: "0.5rem",
+                                    },
+                                  }}
+                                >
+                                  <MoreHorizOutlinedIcon />
+                                </IconButton>
+                              ) : (
+                                row[column.id]
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </TableContainer>

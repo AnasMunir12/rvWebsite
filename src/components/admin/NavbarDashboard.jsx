@@ -23,7 +23,7 @@ function NavbarDashboard() {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "About Us", path: "/about" },
-    { name: "Services", path: "/service" },
+    { name: "Sell Your RV", path: "/RVsell" },
     { name: "Faq", path: "/faq" },
     { name: "Contact Us", path: "/contact" },
   ];

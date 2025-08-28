@@ -418,6 +418,7 @@ function TeamManagment() {
                             backgroundColor: "transparent !important",
                             boxShadow: "0.83px 14.09px 36.47px 0px #03022912",
                             cursor: "pointer",
+                            borderRadius: "20px",
                           },
                         }}
                       >

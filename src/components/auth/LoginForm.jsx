@@ -17,15 +17,19 @@ import EmailIcon from "@mui/icons-material/Email";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import LockIcon from "@mui/icons-material/Lock";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
+import { loginUser } from "../../store/slices/authSlice";
 
 function LoginForm() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const { loading, error } = useSelector((state) => state.rvConsignment);
 
   // ✅ get registered users from redux
   const users = useSelector((state) => state.rvConsignment.users);
@@ -41,21 +45,24 @@ function LoginForm() {
   });
 
   // ✅ onSubmit
-  const handleLogin = (values, { setSubmitting, setErrors }) => {
-    const foundUser = users.find(
-      (u) => u.email === values.email && u.password === values.password
-    );
+  const handleLogin = async (values, { setSubmitting, setErrors }) => {
+    try {
+      const result = await dispatch(loginUser(values)).unwrap();
 
-    if (foundUser) {
-      setOpenSnackbar(true); // ✅ show success snackbar
+      // if login successfull
+      setOpenSnackbar(true);
       setTimeout(() => {
-        navigate("/dashboard"); // redirect after short delay
-      }, 1500);
-    } else {
-      setErrors({ email: "Invalid email or password" });
-    }
+        navigate("/dashboard");
+      }, 2000);
+    } catch (err) {
+      const errorMsg =
+        err?.message || "Incorrect email or password. Please try again.";
 
-    setSubmitting(false);
+      setErrors({
+        email: errorMsg,
+        password: errorMsg,
+      });
+    }
   };
 
   return (
@@ -181,25 +188,16 @@ function LoginForm() {
                       onBlur={handleBlur}
                       error={touched.email && Boolean(errors.email)}
                       helperText={
-                        touched.email &&
-                        errors.email && (
-                          <FormHelperText error>
-                            <Typography
-                              variant="caption"
-                              color="error"
-                              sx={{
-                                display: "block",
-                                textAlign: "start",
-                                ml: -3,
-                                mt: -0.5,
-                              }}
-                            >
-                              {errors.email}
-                            </Typography>
-                          </FormHelperText>
-                        )
-                      }
-                      sx={{ width: "60%" }}
+                        touched.email && errors.email ? errors.email : ""
+                      } // ✅ fixed
+                      sx={{
+                        width: "60%",
+                        "& .MuiOutlinedInput-root": {
+                          "&.Mui-focused fieldset": {
+                            borderColor: "var(--icon-color)", // ✅ focused border color
+                          },
+                        },
+                      }}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -211,7 +209,14 @@ function LoginForm() {
 
                     {/* Password */}
                     <FormControl
-                      sx={{ width: "60%" }}
+                      sx={{
+                        width: "60%",
+                        "& .MuiOutlinedInput-root": {
+                          "&.Mui-focused fieldset": {
+                            borderColor: "var(--icon-color)", // ✅ focused border color
+                          },
+                        },
+                      }}
                       size="small"
                       variant="outlined"
                       error={touched.password && Boolean(errors.password)}
@@ -245,7 +250,6 @@ function LoginForm() {
                           </InputAdornment>
                         }
                       />
-                      {/* ✅ Correct error display */}
                       {touched.password && errors.password && (
                         <FormHelperText error>
                           <Typography
@@ -268,7 +272,7 @@ function LoginForm() {
                   <Button
                     type="submit"
                     variant="contained"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || loading}
                     sx={{
                       color: "var(--white-text)",
                       bgcolor: "var(--icon-color)",
@@ -321,7 +325,6 @@ function LoginForm() {
                 </Form>
               )}
             </Formik>
-
             {/* Snackbar Success Alert */}
             <Snackbar
               open={openSnackbar}
@@ -336,6 +339,20 @@ function LoginForm() {
                 sx={{ width: "100%" }}
               >
                 Login successful
+              </Alert>
+            </Snackbar>
+
+            {/* Snackbar Error Alert */}
+            <Snackbar
+              open={!!error}
+              autoHideDuration={5000}
+              onClose={() => {}}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              <Alert severity="error" variant="filled" sx={{ width: "100%" }}>
+                {typeof error === "string"
+                  ? error
+                  : error?.message || error?.error || "Login failed"}
               </Alert>
             </Snackbar>
           </Box>

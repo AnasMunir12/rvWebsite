@@ -13,12 +13,10 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../../../store/slices/RvConsignment";
+import { logoutUser } from "../../../store/slices/authSlice";
 
 function Navbar() {
   const dispatch = useDispatch();
-
-  const users = useSelector((state) => state.rvConsignment.users);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,6 +28,8 @@ function Navbar() {
     { name: "Faq", path: "/faq" },
     { name: "Contact Us", path: "/contact" },
   ];
+
+  const token = localStorage.getItem("token");
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -186,9 +186,7 @@ function Navbar() {
                         lineHeight: "22px",
                         cursor: "pointer",
                         transition: "all 0.3s ease",
-                        "&:hover": {
-                          color: "var(--icon-color)",
-                        },
+                        "&:hover": { color: "var(--icon-color)" },
                       }}
                     >
                       {link.name}
@@ -197,150 +195,88 @@ function Navbar() {
                 );
               })}
 
-              {/* Login/Dashboard Button */}
-              <Box
-                onClick={() => {
-                  navigate(users ? "/dashboard/overview" : "/login");
-                  setOpenDrawer(false);
-                }}
-                sx={{
-                  px: 2.5,
-                  py: 1,
-                  border: "1px solid var(--icon-color)",
-                  borderRadius: "3px",
-                  backgroundColor: users
-                    ? "var(--icon-color)"
-                    : "var(--white-text)",
-                  cursor: "pointer",
-                  transition: "all 0.3s ease-in-out",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  "&:hover": {
-                    backgroundColor: users
-                      ? "var(--white-text)"
-                      : "var(--icon-color)",
-                    borderColor: "var(--icon-color)",
-                    "& .hover-text": {
-                      color: users ? "var(--icon-color)" : "var(--white-text)",
-                    },
-                  },
-                }}
-              >
-                <Typography
-                  className="hover-text"
+              {/* Login / Logout Button */}
+              {token ? (
+                <Box
+                  onClick={() => navigate("/dashboard")}
                   sx={{
-                    fontSize: "var(--font-sm)",
-                    fontWeight: 600,
-                    fontFamily: "var(--font-family-montserrat)",
-                    color: users ? "var(--white-text)" : "var(--bg-color)",
-                    transition: "color 0.3s ease-in-out",
+                    px: 2.5,
+                    py: 1,
+                    border: "1px solid var(--icon-color)",
+                    borderRadius: "3px",
+                    backgroundColor: "var(--icon-color)",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease-in-out",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    "&:hover": {
+                      backgroundColor: "var(--white-text)",
+                      "& .hover-text": { color: "var(--icon-color)" },
+                    },
                   }}
                 >
-                  {users ? "Dashboard" : "Login Now"}
-                </Typography>
-              </Box>
+                  <Typography
+                    className="hover-text"
+                    sx={{
+                      fontSize: "var(--font-sm)",
+                      fontWeight: 600,
+                      fontFamily: "var(--font-family-montserrat)",
+                      color: "var(--white-text)",
+                      transition: "color 0.3s ease-in-out",
+                    }}
+                  >
+                    Dashboard
+                  </Typography>
+                </Box>
+              ) : (
+                <Box
+                  onClick={() => {
+                    navigate("/login");
+                    setOpenDrawer(false);
+                  }}
+                  sx={{
+                    px: 2.5,
+                    py: 1,
+                    border: "1px solid var(--icon-color)",
+                    borderRadius: "3px",
+                    backgroundColor: "var(--white-text)",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease-in-out",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    "&:hover": {
+                      backgroundColor: "var(--icon-color)",
+                      "& .hover-text": { color: "var(--white-text)" },
+                    },
+                  }}
+                >
+                  <Typography
+                    className="hover-text"
+                    sx={{
+                      fontSize: "var(--font-sm)",
+                      fontWeight: 600,
+                      fontFamily: "var(--font-family-montserrat)",
+                      color: "var(--bg-color)",
+                      transition: "color 0.3s ease-in-out",
+                    }}
+                  >
+                    Login
+                  </Typography>
+                </Box>
+              )}
             </Box>
           )}
         </Box>
       </Box>
 
-      {/* Drawer for mobile */}
+      {/* Drawer for Mobile */}
       <Drawer
         anchor="right"
         open={openDrawer}
         onClose={() => setOpenDrawer(false)}
       >
-        <Box
-          sx={{
-            width: "100%",
-            height: 40,
-            bgcolor: "var(--bg-color)",
-            display: {
-              "@media (max-width:760px)": {
-                display: "none",
-              },
-              sm: "flex",
-            },
-            justifyContent: "space-between",
-            alignItems: "center",
-            px: { sm: 4, md: 10, lg: 15 },
-            py: 0.5,
-            zIndex: 1200,
-          }}
-        >
-          <Box display="flex" alignItems="center" gap={2}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Box
-                component="img"
-                src="/images/icons/callIcon.svg"
-                alt="Call"
-              />
-              <Typography
-                sx={{
-                  color: "var(--white-text)",
-                  fontSize: "14px",
-                  fontFamily: "var(--font-family-hind)",
-                }}
-              >
-                Call on : (+62) 134 567 891
-              </Typography>
-            </Box>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Box
-                component="img"
-                src="/images/icons/mailIcon.svg"
-                alt="Email"
-              />
-              <Typography
-                sx={{
-                  color: "var(--white-text)",
-                  fontSize: "14px",
-                  fontFamily: "var(--font-family-hind)",
-                }}
-              >
-                kamperven@domain.com
-              </Typography>
-            </Box>
-          </Box>
-
-          <Stack
-            direction="row"
-            gap={2}
-            divider={
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{ borderColor: "#fff" }}
-              />
-            }
-          >
-            <Box
-              component="img"
-              src="/images/icons/facebook.svg"
-              alt="Facebook"
-              sx={{ width: 25, cursor: "pointer" }}
-            />
-            <Box
-              component="img"
-              src="/images/icons/twitter.svg"
-              alt="Twitter"
-              sx={{ width: 25, cursor: "pointer" }}
-            />
-            <Box
-              component="img"
-              src="/images/icons/youtube.svg"
-              alt="YouTube"
-              sx={{ width: 18, cursor: "pointer" }}
-            />
-            <Box
-              component="img"
-              src="/images/icons/instagram.svg"
-              alt="Instagram"
-              sx={{ width: 18, cursor: "pointer" }}
-            />
-          </Stack>
-        </Box>
         <Box
           sx={{
             width: "100vw",
@@ -355,7 +291,7 @@ function Navbar() {
           <Box
             display="flex"
             justifyContent="space-between"
-            alignItems={"center"}
+            alignItems="center"
           >
             <Typography
               sx={{
@@ -372,35 +308,6 @@ function Navbar() {
               <CloseIcon sx={{ color: "white" }} />
             </IconButton>
           </Box>
-
-          {/* <Box
-            onClick={() => {
-              navigate(users ? "/dashboard/overview" : "/login");
-              setOpenDrawer(false);
-            }}
-            sx={{
-              width: "100%",
-              py: 1.5,
-              backgroundColor: "var(--white-text)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              border: "1px solid var(--icon-color)",
-              borderRadius: 3,
-              cursor: "pointer",
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: "var(--font-sm)",
-                fontWeight: 600,
-                fontFamily: "var(--font-family-montserrat)",
-                color: "var(--bg-color)",
-              }}
-            >
-              {users ? "Dashboard" : "Login Now"}
-            </Typography>
-          </Box> */}
 
           <Stack direction="column" spacing={3} mt={2}>
             {navLinks.map((link) => {
