@@ -10,7 +10,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useDispatch } from "react-redux";
-import { logoutUser } from "../../store/slices/authSlice";
+import { logoutUser } from "../../store/slices/AuthSlice";
 
 function Sidebar({
   isCollapsed,

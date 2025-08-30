@@ -15,7 +15,7 @@ import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlin
 import DateRangeOutlinedIcon from "@mui/icons-material/DateRangeOutlined";
 
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
-import { logoutUser } from "../../store/slices/authSlice";
+import { logoutUser } from "../../store/slices/AuthSlice";
 import { useDispatch } from "react-redux";
 
 export function Sidebar({
