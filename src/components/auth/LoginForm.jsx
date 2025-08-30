@@ -20,7 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import { loginUser } from "../../store/slices/authSlice";
+import { loginUser } from "../../store/slices/AuthSlice";
 
 function LoginForm() {
   const navigate = useNavigate();
