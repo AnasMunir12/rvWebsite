@@ -13,7 +13,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../../../store/slices/authSlice";
+import { logoutUser } from "../../../store/slices/AuthSlice";
 
 function Navbar() {
   const dispatch = useDispatch();
