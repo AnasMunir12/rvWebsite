@@ -7,7 +7,6 @@ import Fields from "./Fields";
 function Mainfile() {
   return (
     <>
-      <Navbar />
       <Banner />
     </>
   );

@@ -7,16 +7,17 @@ import {
   TextField,
   Typography,
   DialogContent,
-  DialogTitle,
   Dialog,
   styled,
+  Skeleton,
+  MenuItem,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import usePagination from "@mui/material/usePagination";
 import CloseIcon from "@mui/icons-material/Close";
+import { createSlot, getSlotManagement } from "../../../serviceApi/fieldsApi";
 
 const List = styled("ul")({
   listStyle: "none",
@@ -26,92 +27,128 @@ const List = styled("ul")({
 });
 
 function SlotManagement() {
+  const [slotData, setSlotData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const rowsPerPage = 9;
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(0);
+
   const { items } = usePagination({
-    count: 10,
+    count: totalPages,
+    page: page + 1,
   });
 
-  const [timeSlots, setTimeSlots] = useState([
-    {
-      slot: "SLOT001",
-      Date: "2024-12-20",
-      Time: "9:00",
-      Duration: "60 Minutes",
-      Bookedby: "Amy Clark",
-      Status: "Reserved",
-    },
-    {
-      slot: "SLOT0012",
-      Date: "2024-12-21",
-      Time: "10:00",
-      Duration: "30 Minutes",
-      Bookedby: "Clark",
-      Status: "Reserved",
-    },
-    {
-      slot: "SLOT003",
-      Date: "2024-12-22",
-      Time: "2:00",
-      Duration: "20 Minutes",
-      Bookedby: "Amy Clark",
-      Status: "Reserved",
-    },
-    {
-      slot: "SLOT004",
-      Date: "2024-12-23",
-      Time: "8:00",
-      Duration: "40 Minutes",
-      Bookedby: "Jao Clerk",
-      Status: "Reserved",
-    },
-    {
-      slot: "SLOT005",
-      Date: "2024-12-24",
-      Time: "7:00",
-      Duration: "50 Minutes",
-      Bookedby: "Amy Clark",
-      Status: "Reserved",
-    },
-  ]);
+  const durationOptions = [
+    { value: 15, label: "15 Minutes" },
+    { value: 30, label: "30 Minutes" },
+    { value: 45, label: "45 Minutes" },
+    { value: 60, label: "60 Minutes" },
+    { value: 90, label: "90 Minutes" },
+    { value: 120, label: "120 Minutes" },
+  ];
 
   const [open, setOpen] = useState(false);
-  const [newSlot, setNewslot] = useState({
-    slot: "",
-    Date: " ",
-    Time: " ",
-    Duration: " ",
-    Bookedby: " ",
-    Status: " ",
+  const [newSlot, setNewSlot] = useState({
+    date: "",
+    startTime: "",
+    endTime: "",
+    duration: "",
   });
 
+  // Get Slot Details
+  useEffect(() => {
+    const fetchslotApi = async () => {
+      try {
+        setLoading(true);
+        const response = await getSlotManagement(page + 1, rowsPerPage);
+        const slots = response.data.data.slots;
+
+        const formattedSlots = slots.map((slot, index) => ({
+          slot: `SLOT${index + 1 + page * rowsPerPage}`,
+          Date: slot.date,
+          Time: ` ${slot.startTime} - ${slot.endTime} `,
+          Duration: slot.duration ? `${slot.duration} Minutes` : "N/A",
+          Bookedby: slot.bookedBy || "Not Booked",
+          Status: slot.isBooked ? "Reserved" : "Available",
+        }));
+
+        setSlotData(formattedSlots);
+        setTotalPages(response.data.data.totalPages);
+      } catch (error) {
+        console.log("Error fetching slots:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchslotApi();
+  }, [page, rowsPerPage]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage - 1); // your backend page starts from 1
+  };
+
   const handleChange = (e) => {
-    setNewslot({
+    setNewSlot({
       ...newSlot,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleCreate = () => {
-    if (
-      !newSlot.slot ||
-      !newSlot.Date ||
-      !newSlot.Time ||
-      !newSlot.Duration ||
-      !newSlot.Bookedby ||
-      !newSlot.Status
-    ) {
-      alert("Please fill all fields");
-      return;
+  const handleSubmit = async () => {
+    try {
+      // ✅ Validate required fields
+      if (
+        !newSlot.date ||
+        !newSlot.startTime ||
+        !newSlot.endTime ||
+        !newSlot.duration
+      ) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      // ✅ Prepare payload for backend
+      const payload = {
+        date: newSlot.date,
+        startTime: newSlot.startTime, // keep separate for backend
+        endTime: newSlot.endTime, // keep separate for backend
+        duration: newSlot.duration,
+      };
+
+      // ✅ Create new slot
+      const res = await createSlot(payload);
+      console.log("✅ Slot created:", res.data);
+      alert("Slot Created Successfully!");
+      setOpen(false);
+
+      // ✅ Refresh slots after creating new one
+      setLoading(true);
+      const response = await getSlotManagement(page + 1, rowsPerPage);
+      const slots = response.data.data.slots;
+
+      const formattedSlots = slots.map((slot, index) => {
+        return {
+          slot: `SLOT${index + 1 + page * rowsPerPage}`,
+          Date: slot.date,
+          // ✅ Merge startTime and endTime only for display
+          Time:
+            slot.startTime && slot.endTime
+              ? `${slot.startTime} - ${slot.endTime}`
+              : "N/A",
+          Duration: slot.duration ? slot.duration : "N/A",
+          // Bookedby: slot.bookedBy || "Not Booked",
+          // Status: slot.isBooked ? "Reserved" : "Available",
+        };
+      });
+
+      setSlotData(formattedSlots);
+    } catch (error) {
+      console.error("❌ Error creating slot:", error);
+      alert("Error creating slot. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setTimeSlots([...timeSlots, newSlot]);
-    setNewslot({
-      slot: "",
-      Date: "",
-      Time: "",
-      Duration: "",
-      Bookedby: "",
-      Status: "",
-    });
-    setOpen(false);
   };
 
   return (
@@ -145,7 +182,7 @@ function SlotManagement() {
               sx={{
                 bgcolor: "var(--icon-color)",
                 borderRadius: "8px",
-                p: { xs: "5px 10px", md: "15px 25px" },
+                p: { xs: "5px 10px", md: "10px 20px" },
                 textTransform: "capitalize",
               }}
             >
@@ -160,7 +197,7 @@ function SlotManagement() {
             sx={{
               backgroundColor: "white",
               boxShadow: "0px 0px 4px 0px #FF8E291A",
-              px: 3,
+              px: 1.5,
               py: 3,
               borderRadius: "20px",
               display: "flex",
@@ -185,7 +222,7 @@ function SlotManagement() {
                   mb: 4,
                 }}
               >
-                Team Members
+                Time Slots
               </Typography>
               <Button
                 variant="contained"
@@ -193,7 +230,7 @@ function SlotManagement() {
                 sx={{
                   bgcolor: "var(--icon-color)",
                   borderRadius: "8px",
-                  p: "15px 25px",
+                  p: "10px 15px",
                   textTransform: "capitalize",
                 }}
               >
@@ -201,166 +238,213 @@ function SlotManagement() {
               </Button>
             </Box>
 
-            {/* <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            > */}
             <Grid container spacing={2}>
-              {timeSlots.map((link, index) => (
-                <Grid
-                  key={index}
-                  size={{
-                    xs: 12,
-                    sm: 6,
-                    md: 4,
-                    xl: 3,
-                  }}
-                  sx={{
-                    display: "flex",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      flex: 1, // take full available width
-                      boxShadow: "0px 4px 4px 0px #0000001A",
-                      borderTop: "4px solid #F0A837",
-                      borderRadius: "0.625rem",
-                      bgcolor: "#D4D4D41A",
-                      px: 2,
-                      py: 2,
-                      mb: 2,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      gap: 2,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {/* Slot Header */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography
+              {loading
+                ? Array.from({ length: rowsPerPage }).map((_, index) => (
+                    <Grid key={index} size={{ xs: 12, sm: 6, md: 4, xl: 3 }}>
+                      <Box
                         sx={{
-                          color: "#050F24",
-                          fontSize: "var(--font-md)",
-                          fontWeight: 600,
-                          fontFamily: "var(--font-family-montserrat)",
-                          textTransform: "uppercase",
+                          boxShadow: "0px 4px 4px 0px #0000001A",
+                          borderTop: "4px solid #F0A837",
+                          borderRadius: "0.625rem",
+                          bgcolor: "#D4D4D41A",
+                          px: 2,
+                          py: 2,
+                          mb: 2,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          gap: 2,
+                          height: "180px",
                         }}
                       >
-                        {link.slot}
-                      </Typography>
-                      <IconButton>
-                        <MoreHorizIcon sx={{ color: "#050F24B2" }} />
-                      </IconButton>
-                    </Box>
-
-                    {/* Date */}
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
-                      <Typography
-                        sx={{ color: "#00000080", fontSize: "var(--font-sm)" }}
-                      >
-                        Date
-                      </Typography>
-                      <Typography
-                        sx={{ color: "#050F24", fontSize: "var(--font-md)" }}
-                      >
-                        {link.Date}
-                      </Typography>
-                    </Box>
-
-                    {/* Time */}
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
-                      <Typography
-                        sx={{ color: "#00000080", fontSize: "var(--font-sm)" }}
-                      >
-                        Time
-                      </Typography>
-                      <Typography
-                        sx={{ color: "#050F24", fontSize: "var(--font-md)" }}
-                      >
-                        {link.Time}
-                      </Typography>
-                    </Box>
-
-                    {/* Duration */}
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
-                      <Typography
-                        sx={{ color: "#00000080", fontSize: "var(--font-sm)" }}
-                      >
-                        Duration
-                      </Typography>
-                      <Typography
-                        sx={{ color: "#050F24", fontSize: "var(--font-md)" }}
-                      >
-                        {link.Duration}
-                      </Typography>
-                    </Box>
-
-                    {/* Booked By */}
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
-                      <Typography
-                        sx={{ color: "#00000080", fontSize: "var(--font-sm)" }}
-                      >
-                        Booked By
-                      </Typography>
-                      <Typography
-                        sx={{ color: "#050F24", fontSize: "var(--font-md)" }}
-                      >
-                        {link.Bookedby}
-                      </Typography>
-                    </Box>
-
-                    {/* Status */}
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
-                      <Typography
-                        sx={{ color: "#00000080", fontSize: "var(--font-sm)" }}
-                      >
-                        Status
-                      </Typography>
-                      <Typography
+                        <Skeleton variant="text" width="40%" height={30} />
+                        <Skeleton variant="text" width="100%" />
+                        <Skeleton variant="text" width="100%" />
+                        <Skeleton variant="text" width="100%" />
+                        <Skeleton variant="text" width="100%" />
+                        <Skeleton variant="text" width="30%" />
+                      </Box>
+                    </Grid>
+                  ))
+                : slotData.map((link, index) => (
+                    <Grid key={index} size={{ xs: 12, sm: 6, md: 4, xl: 3 }}>
+                      <Box
                         sx={{
-                          color: "#FD6A6A",
-                          fontSize: "var(--font-md)",
-                          bgcolor: "#FD6A6A33",
-                          borderRadius: "0.844rem",
-                          p: "0.25rem 0.5rem",
-                          gap: "0.625rem",
+                          boxShadow: "0px 4px 4px 0px #0000001A",
+                          borderTop: "4px solid #F0A837",
+                          borderRadius: "0.625rem",
+                          bgcolor: "#D4D4D41A",
+                          px: 2,
+                          py: 2,
+                          mb: 2,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          gap: 2,
+                          cursor: "pointer",
+                          minHeight: "180px",
                         }}
                       >
-                        {link.Status}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-              ))}
+                        {/* Slot Header */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              color: "#050F24",
+                              fontSize: "var(--font-md)",
+                              fontWeight: 600,
+                              fontFamily: "var(--font-family-montserrat)",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {link.slot}
+                          </Typography>
+                        </Box>
+
+                        {/* Date */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              color: "#00000080",
+                              fontSize: "var(--font-sm)",
+                            }}
+                          >
+                            Date
+                          </Typography>
+                          <Typography
+                            sx={{
+                              color: "#050F24",
+                              fontSize: "var(--font-md)",
+                            }}
+                          >
+                            {link.Date}
+                          </Typography>
+                        </Box>
+
+                        {/* Time */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              color: "#00000080",
+                              fontSize: "var(--font-sm)",
+                            }}
+                          >
+                            Time
+                          </Typography>
+                          <Typography
+                            sx={{
+                              color: "#050F24",
+                              fontSize: "var(--font-md)",
+                            }}
+                          >
+                            {link.Time}
+                          </Typography>
+                        </Box>
+
+                        {/* Duration */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              color: "#00000080",
+                              fontSize: "var(--font-sm)",
+                            }}
+                          >
+                            Duration
+                          </Typography>
+                          <Typography
+                            sx={{
+                              color: "#050F24",
+                              fontSize: "var(--font-md)",
+                            }}
+                          >
+                            {link.Duration}
+                          </Typography>
+                        </Box>
+
+                        {/* Booked By */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              color: "#00000080",
+                              fontSize: "var(--font-sm)",
+                            }}
+                          >
+                            Booked By
+                          </Typography>
+                          <Typography
+                            sx={{
+                              color: "#050F24",
+                              fontSize: "var(--font-md)",
+                            }}
+                          >
+                            {link.Bookedby}
+                          </Typography>
+                        </Box>
+
+                        {/* Status */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              color: "#00000080",
+                              fontSize: "var(--font-sm)",
+                            }}
+                          >
+                            Status
+                          </Typography>
+                          <Typography
+                            sx={{
+                              color: "#FD6A6A",
+                              fontSize: "var(--font-md)",
+                              bgcolor: "#FD6A6A33",
+                              borderRadius: "0.844rem",
+                              p: "0.25rem 0.5rem",
+                              gap: "0.625rem",
+                            }}
+                          >
+                            {link.Status}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Grid>
+                  ))}
             </Grid>
-
-            {/* </Box> */}
 
             <Box
               sx={{
                 display: "flex",
                 justifyContent: "flex-end",
-                mt: "8rem",
+                mt: 2,
               }}
             >
               <nav>
@@ -388,7 +472,9 @@ function SlotManagement() {
                           <button
                             type="button"
                             {...item}
+                            onClick={() => handlePageChange(page)}
                             style={{ all: "unset" }}
+                            disabled={disabled || loading}
                           >
                             <Box
                               component="span"
@@ -402,7 +488,11 @@ function SlotManagement() {
                                 borderRadius: "8px",
                                 border: "1.15px solid #F1F1F1",
                                 fontWeight: selected ? "bold" : "normal",
-                                cursor: "pointer",
+                                cursor:
+                                  disabled || loading
+                                    ? "not-allowed"
+                                    : "pointer",
+                                opacity: disabled || loading ? 0.5 : 1,
                                 transition: "0.2s",
                                 "&:hover": {
                                   bgcolor: selected
@@ -422,13 +512,18 @@ function SlotManagement() {
                             type="button"
                             {...item}
                             style={{ all: "unset" }}
+                            disabled={disabled || loading}
                           >
                             <Box
                               component="span"
                               sx={{
-                                color: disabled ? "#CCCCCC" : "#F0A837",
+                                color:
+                                  disabled || loading ? "#CCCCCC" : "#F0A837",
                                 fontWeight: "bold",
-                                cursor: disabled ? "not-allowed" : "pointer",
+                                cursor:
+                                  disabled || loading
+                                    ? "not-allowed"
+                                    : "pointer",
                                 px: 1,
                               }}
                             >
@@ -462,15 +557,15 @@ function SlotManagement() {
         fullWidth
         sx={{
           "& .MuiDialog-paper": {
-            backgroundColor: "var(--white-text)", // background color
+            backgroundColor: "var(--white-text)",
             p: 1,
-            color: "#333", // text color
-            borderRadius: "1rem", // rounded corners
+            color: "#333",
+            borderRadius: "1rem",
           },
         }}
       >
         <DialogContent
-          sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+          sx={{ display: "flex", flexDirection: "column", gap: 1.5, mt: 0 }}
         >
           <Box
             sx={{
@@ -520,11 +615,13 @@ function SlotManagement() {
               </IconButton>
             </Box>
           </Box>
+
+          {/* Date */}
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
-              gap: 1,
+              gap: 0.5,
             }}
           >
             <Typography
@@ -540,9 +637,8 @@ function SlotManagement() {
             <TextField
               size="small"
               type="date"
-              //   label="Date"
-              name="Date"
-              value={newSlot.Date}
+              name="date"
+              value={newSlot.date}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
               sx={{
@@ -559,11 +655,12 @@ function SlotManagement() {
             />
           </Box>
 
+          {/* Start Time */}
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
-              gap: 1,
+              gap: 0.5,
             }}
           >
             <Typography
@@ -580,9 +677,8 @@ function SlotManagement() {
             <TextField
               size="small"
               type="time"
-              //   label="Time"
-              name="Time"
-              value={newSlot.Time}
+              name="startTime"
+              value={newSlot.startTime}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
               sx={{
@@ -599,11 +695,12 @@ function SlotManagement() {
             />
           </Box>
 
+          {/* End Time */}
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
-              gap: 1,
+              gap: 0.5,
             }}
           >
             <Typography
@@ -619,9 +716,8 @@ function SlotManagement() {
             <TextField
               size="small"
               type="time"
-              //   label="Booked By"
-              name="Bookedby"
-              value={newSlot.Bookedby}
+              name="endTime"
+              value={newSlot.endTime}
               onChange={handleChange}
               InputLabelProps={{ shrink: true }}
               sx={{
@@ -637,11 +733,13 @@ function SlotManagement() {
               }}
             />
           </Box>
+
+          {/* Duration */}
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
-              gap: 1,
+              gap: 0.5,
             }}
           >
             <Typography
@@ -656,18 +754,59 @@ function SlotManagement() {
             </Typography>
 
             <TextField
+              select
               size="small"
-              //   label="Status"
-              name="Status"
-              value={newSlot.Status}
+              name="duration"
+              value={newSlot.duration}
               onChange={handleChange}
+              SelectProps={{
+                MenuProps: {
+                  anchorOrigin: {
+                    vertical: "top",
+                    horizontal: "left",
+                  },
+                  transformOrigin: {
+                    vertical: "bottom",
+                    horizontal: "left",
+                  },
+                  PaperProps: {
+                    sx: {
+                      maxHeight: 150,
+                      overflowX: "auto",
+                      "& .MuiMenuItem-root": {
+                        width: "100%",
+                        "&:hover": {
+                          backgroundColor: "#ffedd5",
+                          color: "var(--bg-text)",
+                        },
+                        "&.Mui-selected": {
+                          backgroundColor: "var(--icon-color) !important",
+                          color: "var(--white-text)",
+                        },
+                      },
+                    },
+                  },
+                },
+              }}
               sx={{
                 "& .MuiOutlinedInput-root": {
                   border: "1px solid #E1E1E1",
                   borderRadius: "10px",
+                  "&:hover fieldset": {
+                    borderColor: "var(--icon-color)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "var(--icon-color)",
+                  },
                 },
               }}
-            />
+            >
+              {durationOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
           </Box>
         </DialogContent>
         <DialogActions>
@@ -684,7 +823,7 @@ function SlotManagement() {
           </Button>
           <Button
             variant="contained"
-            onClick={handleCreate}
+            onClick={handleSubmit}
             sx={{
               bgcolor: "#F0A837 ",
               borderRadius: "8px",

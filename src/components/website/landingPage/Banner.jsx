@@ -18,6 +18,8 @@ function Banner() {
   const users = useSelector((state) => state.rvConsignment.users);
   const isMobile = useMediaQuery("(max-width:900px)");
 
+  const token = localStorage.getItem("token");
+
   return (
     <>
       <Box sx={{ height: "100%" }}>
@@ -258,9 +260,9 @@ function Banner() {
                       color: "white",
                       "&:hover": { bgcolor: "var(--icon-color)" },
                     }}
-                    onClick={() => navigate(users ? "/dashboard" : "/login")}
+                    onClick={() => navigate(token ? "/dashboard" : "/login")}
                   >
-                    {users ? "Dashboard" : "Login"}
+                    {token ? "Dashboard" : "Login"}
                   </Button>
                 </Box>
               )}

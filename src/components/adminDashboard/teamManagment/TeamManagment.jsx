@@ -8,11 +8,12 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Skeleton,
   TextField,
   Typography,
   styled,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import usePagination from "@mui/material/usePagination";
 import CloseIcon from "@mui/icons-material/Close";
@@ -31,6 +32,7 @@ import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import BorderColorOutlinedIcon from "@mui/icons-material/BorderColorOutlined";
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
+import { getTeamManagement } from "../../../serviceApi/fieldsApi";
 
 const columns = [
   { id: "member", label: "Member", minWidth: 170, align: "left" },
@@ -84,6 +86,7 @@ function TeamManagment() {
   const open = Boolean(anchor);
 
   const [menuState, setMenuState] = useState({ anchor: null, rowIndex: null });
+  const [loading, setLoading] = useState(true);
 
   const handleclick = (event, index) => {
     setMenuState({ anchor: event.currentTarget, rowIndex: index });
@@ -100,6 +103,94 @@ function TeamManagment() {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+
+  const [teamManagementData, setTeamManagmentData] = useState([]);
+
+  const [allUserData, setAllUserData] = useState([]);
+
+  useEffect(() => {
+    const fetchTeamManagement = async () => {
+      try {
+        const response = await getTeamManagement();
+        const data = response.data?.data;
+
+        const formatted = [
+          {
+            totalMembers: data.stats.totalMembers,
+          },
+          {
+            totalMembers: data.stats?.dealers,
+          },
+          {
+            totalMembers: data.stats?.virtualAssistants,
+          },
+          {
+            totalMembers: data.stats?.staff,
+          },
+        ];
+        setTeamManagmentData(formatted);
+      } catch (error) {
+        console.error("Error fetching team management data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeamManagement();
+  }, []);
+
+  const staticTeam = [
+    {
+      icon: "/images/admin/overview/total.svg",
+      name: "Total Members",
+    },
+    {
+      icon: "/images/admin/overview/active.svg",
+      name: "Dealer Count",
+    },
+    {
+      icon: "/images/admin/overview/process.svg",
+      name: "Virtual Assistants",
+    },
+    {
+      icon: "/images/admin/overview/schedule.svg",
+      name: "Staff",
+    },
+  ];
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await getTeamManagement();
+        const data = response.data?.data.users || [];
+
+        const formattedData = data.map((user, index) => ({
+          id: user.id ?? index,
+          member: user.name ?? "N/A", // 👈 matches "member"
+          mail: user.email ?? "N/A", // 👈 matches "mail"
+          role: user.role ?? "N/A",
+          leadAssigned: user.leadsAssigned ?? 0, // 👈 matches "leadAssigned"
+          lastLogin: user.lastLogin
+            ? new Date(user.lastLogin).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })
+            : "Never",
+          status: user.status ?? "Inactive",
+          action: "", // placeholder for action column
+        }));
+
+        setAllUserData(formattedData);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData(); // ✅ no param
+  }, []);
 
   const TeamManagData = [
     {
@@ -235,7 +326,7 @@ function TeamManagment() {
     },
   ];
 
-  const rows = TeamData.map((item) => ({
+  const rows = allUserData.map((item) => ({
     member: item.Name,
     mail: item.email,
     role: item.role,
@@ -248,7 +339,7 @@ function TeamManagment() {
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const { items } = usePagination({
-    count: Math.ceil(rows.length / rowsPerPage),
+    count: Math.ceil(allUserData.length / rowsPerPage),
     page: page + 1, // usePagination is 1-based
     onChange: (e, value) => handleChangePage(e, value - 1),
   });
@@ -290,13 +381,11 @@ function TeamManagment() {
             </Button>
           </Box>
 
-          {TeamManagData.map((link, index) => (
+          {staticTeam.map((link, index) => (
             <Grid
               size={{ xs: 12, md: 6, lg: 3 }}
               key={index}
-              sx={{
-                pt: "1rem",
-              }}
+              sx={{ pt: "1rem" }}
             >
               <Box
                 sx={{
@@ -316,7 +405,7 @@ function TeamManagment() {
                     height: { xs: "50px", xl: "59px" },
                   }}
                 />
-                <Box display={"flex"} flexDirection={"column"} gap={1}>
+                <Box display="flex" flexDirection="column" gap={1}>
                   <Typography
                     sx={{
                       fontSize: "var(--font-sm)",
@@ -327,16 +416,23 @@ function TeamManagment() {
                   >
                     {link.name}
                   </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: "var(--font-sm)",
-                      fontWeight: 500,
-                      fontFamily: "var(--font-family-montserrat)",
-                      color: "#6F757E",
-                    }}
-                  >
-                    {link.qty}
-                  </Typography>
+
+                  {loading ? (
+                    <Skeleton variant="rectangular" width="100%" height={20} />
+                  ) : (
+                    teamManagementData[index] && (
+                      <Typography
+                        sx={{
+                          fontSize: "var(--font-sm)",
+                          fontWeight: 500,
+                          fontFamily: "var(--font-family-montserrat)",
+                          color: "#6F757E",
+                        }}
+                      >
+                        {teamManagementData[index].totalMembers}+
+                      </Typography>
+                    )
+                  )}
                 </Box>
               </Box>
             </Grid>
@@ -407,103 +503,56 @@ function TeamManagment() {
                 </TableHead>
 
                 <TableBody>
-                  {rows
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row, index) => (
-                      <TableRow
-                        hover
-                        key={index}
-                        sx={{
-                          "&:hover": {
-                            backgroundColor: "transparent !important",
-                            boxShadow: "0.83px 14.09px 36.47px 0px #03022912",
-                            cursor: "pointer",
-                          },
-                        }}
-                      >
+                  {loading ? (
+                    // ✅ Show Skeleton while loading
+                    [...Array(5)].map((_, index) => (
+                      <TableRow key={index}>
                         {columns.map((column) => (
                           <TableCell
                             key={column.id}
                             align={column.align}
-                            sx={{
-                              border: "none",
-                              fontSize: "var(--font-sm)",
-                              fontFamily: "var(--font-family-montserrat)",
-                              color: "#6F757E",
-                              px: 3,
-                              py: 1.5,
-                              "&:first-of-type": {
-                                pl: 4,
-                                borderTopLeftRadius: "8px",
-                                borderBottomLeftRadius: "8px",
-                              },
-                              "&:last-of-type": {
-                                pr: 4,
-                                borderTopRightRadius: "8px",
-                                borderBottomRightRadius: "8px",
-                              },
-                            }}
+                            sx={{ border: "none", py: 1.5 }}
                           >
-                            {column.id === "status" ? (
-                              <Box
-                                sx={{
-                                  color:
-                                    row.status === "Active"
-                                      ? "var(--icon-color)"
-                                      : row.status === "InActive"
-                                      ? "#28803D"
-                                      : row.status === "Docs Approved"
-                                      ? "#28803D"
-                                      : "inherit",
-                                  bgcolor:
-                                    row.status === "Active"
-                                      ? "#F0A8371A"
-                                      : row.status === "InActive"
-                                      ? "#28803D1A"
-                                      : "inherit",
-                                  fontSize: "var(--font-sm)",
-                                  fontFamily: "var(--font-family-montserrat)",
-                                  fontWeight: 500,
-                                  borderRadius: "1.709rem",
-                                  textAlign: "center",
-                                  p: "0.3rem 0.1rem",
-                                  width: "80%",
-                                  display: "inline-block",
-                                }}
-                              >
-                                {row.status}
-                              </Box>
-                            ) : column.id === "action" ? (
-                              <IconButton
-                                onClick={(e) => handleclick(e, index)}
-                                size="small"
-                                sx={{
-                                  color:
-                                    row.status === "Active"
-                                      ? "var(--icon-color)"
-                                      : row.status === "InActive"
-                                      ? "#28803D"
-                                      : row.status === "Docs Approved"
-                                      ? "#28803D"
-                                      : "inherit",
-                                  borderRadius: "0.5rem",
-
-                                  "&:hover": {
-                                    bgcolor: "var(--icon-color)",
-                                    color: "black",
-                                    borderRadius: "0.5rem",
-                                  },
-                                }}
-                              >
-                                <MoreHorizOutlinedIcon />
-                              </IconButton>
-                            ) : (
-                              row[column.id]
-                            )}
+                            <Skeleton
+                              variant="rectangular"
+                              width="100%"
+                              height={20}
+                              sx={{ borderRadius: "4px" }}
+                            />
                           </TableCell>
                         ))}
                       </TableRow>
-                    ))}
+                    ))
+                  ) : allUserData.length > 0 ? (
+                    allUserData
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      .map((row, index) => (
+                        <TableRow key={row.id || index} hover>
+                          {columns.map((column) => (
+                            <TableCell key={column.id} align={column.align}>
+                              {column.id === "status" ? (
+                                // same status badge code
+                                <Box>{row.status}</Box>
+                              ) : column.id === "action" ? (
+                                // same action button code
+                                <IconButton>...</IconButton>
+                              ) : (
+                                row[column.id] // ✅ now matches because of fixed mapping
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} align="center">
+                        No records found
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

@@ -10,7 +10,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useDispatch } from "react-redux";
-import { logoutUser } from "../../store/slices/RvConsignment";
+import { logoutUser } from "../../store/slices/authSlice";
 
 function Sidebar({
   isCollapsed,
@@ -64,7 +64,7 @@ function Sidebar({
 
   const handleLogout = () => {
     dispatch(logoutUser()); // clear redux state
-    localStorage.removeItem("auth"); // if you store token/user in localStorage
+    localStorage.removeItem("token"); // if you store token/user in localStorage
     if (isMobile) handleDrawerToggle();
     navigate("/login");
   };

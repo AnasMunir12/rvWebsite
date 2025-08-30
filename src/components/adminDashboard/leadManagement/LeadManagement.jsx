@@ -13,8 +13,9 @@ import {
   Menu,
   MenuItem,
   List,
+  Skeleton,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -31,6 +32,7 @@ import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 
 import usePagination from "@mui/material/usePagination";
+import { getLeads } from "../../../serviceApi/fieldsApi";
 
 const columns = [
   {
@@ -49,7 +51,7 @@ const columns = [
     id: "submitDate",
     label: "Submitted Date",
     minWidth: 170,
-    align: "right",
+    align: "center",
   },
   {
     id: "status",
@@ -66,6 +68,39 @@ const columns = [
 ];
 
 function LeadManagement() {
+  const [rowsSet, setRows] = useState([]);
+  const [page, setPage] = useState(0); // 👉 keep 0-based for table
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  // fetch leads from API
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        const res = await getLeads(page + 1, rowsPerPage); // API is 1-based
+        const { leads, pagination } = res.data.data;
+
+        // format API data to match your table columns
+        const formatted = leads.map((lead) => ({
+          lead: { name: lead._id, icon: "/images/admin/overview/1.svg" }, // replace with real icon if API has it
+          mail: lead.contact?.email || "-",
+          submitDate: new Date(lead.formSubmittedAt).toLocaleDateString(),
+          status: lead.status,
+          actions: "",
+        }));
+
+        setRows(formatted);
+        setTotalPages(pagination.totalPages);
+      } catch (err) {
+        console.error("Error fetching leads:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLeads();
+  }, [page, rowsPerPage]);
   // Setup pagination hook
 
   const handleChangePage = (event, newPage) => {
@@ -180,12 +215,10 @@ function LeadManagement() {
   }));
 
   // Now that rows is defined, we can use it in usePagination
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const { items } = usePagination({
-    count: Math.ceil(rows.length / rowsPerPage),
-    page: page + 1, // usePagination is 1-based
+    count: totalPages,
+    page: page + 1, // pagination is 1-based
     onChange: (e, value) => handleChangePage(e, value - 1),
   });
 
@@ -333,12 +366,29 @@ function LeadManagement() {
                     </TableHead>
 
                     <TableBody>
-                      {rows
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((row, index) => (
+                      {loading ? (
+                        // ✅ Show Skeleton while loading
+                        [...Array(5)].map((_, index) => (
+                          <TableRow key={index}>
+                            {columns.map((column) => (
+                              <TableCell
+                                key={column.id}
+                                align={column.align}
+                                sx={{ border: "none", py: 1.5 }}
+                              >
+                                <Skeleton
+                                  variant="rectangular"
+                                  width="100%"
+                                  height={20}
+                                  sx={{ borderRadius: "4px" }}
+                                />
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))
+                      ) : rowsSet.length > 0 ? (
+                        // ✅ Show actual rows
+                        rowsSet.map((row, index) => (
                           <TableRow
                             key={index}
                             sx={{
@@ -356,13 +406,11 @@ function LeadManagement() {
                                 align={column.align}
                                 sx={{
                                   border: "none",
-                                  fontSize: "var(--font-sm)",
+                                  fontSize: "var(--font-xs)",
                                   fontFamily: "var(--font-family-montserrat)",
                                   color: "#6F757E",
                                   py: 1.5,
-                                  "&:hover": {
-                                    backgroundColor: "inherit",
-                                  },
+                                  "&:hover": { backgroundColor: "inherit" },
                                   "&:first-of-type": {
                                     borderTopLeftRadius: "0.518rem",
                                     borderBottomLeftRadius: "0.518rem",
@@ -381,13 +429,16 @@ function LeadManagement() {
                                       gap: 1,
                                     }}
                                   >
-                                    <img
-                                      src={row.lead.icon}
-                                      width={25}
-                                      height={25}
-                                      alt=""
-                                    />
-                                    <Typography>{row.lead.name}</Typography>
+                                    <Typography
+                                      sx={{
+                                        fontSize: "var(--font-xs)",
+                                        fontFamily:
+                                          "var(--font-family-montserrat)",
+                                        color: "#6F757E",
+                                      }}
+                                    >
+                                      {row.lead.name}
+                                    </Typography>
                                   </Box>
                                 ) : column.id === "status" ? (
                                   <Box
@@ -455,7 +506,15 @@ function LeadManagement() {
                               </TableCell>
                             ))}
                           </TableRow>
-                        ))}
+                        ))
+                      ) : (
+                        // ✅ No data
+                        <TableRow>
+                          <TableCell colSpan={columns.length} align="center">
+                            No records found
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -595,14 +654,22 @@ function LeadManagement() {
                     alignItems: "center",
                     gap: 1,
                     pr: 2,
+                    cursor: "pointer",
                   }}
                 >
-                  <IconButton sx={{}}>
+                  <IconButton
+                    sx={{
+                      "&:hover": {
+                        bgcolor: "transparent",
+                      },
+                    }}
+                  >
                     <VisibilityOutlinedIcon
                       sx={{
                         width: "1rem",
                         heigh: "1rem",
                         color: "var(--icon-color)",
+                        pointerEvents: "none",
                       }}
                     />
                   </IconButton>
@@ -615,6 +682,9 @@ function LeadManagement() {
                       color: "#6F757E",
                       fontWeight: 500,
                       fontFamily: "var(--font-family-montserrat)",
+                      "&:hover": {
+                        bgcolor: "var(--white-text)",
+                      },
                     }}
                   >
                     View

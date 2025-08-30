@@ -15,6 +15,8 @@ import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlin
 import DateRangeOutlinedIcon from "@mui/icons-material/DateRangeOutlined";
 
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
+import { logoutUser } from "../../store/slices/authSlice";
+import { useDispatch } from "react-redux";
 
 export function Sidebar({
   isCollapsed,
@@ -25,6 +27,7 @@ export function Sidebar({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const isTablet = useMediaQuery("(max-width:1200px) and (min-width:900px)");
 
   const Admindata = [
@@ -45,6 +48,13 @@ export function Sidebar({
       path: "/admin/slotManagement",
     },
   ];
+
+  const HandleLogout = () => {
+    dispatch(logoutUser());
+    localStorage.removeItem("token");
+    if (isMobile) handleDrawerToggle();
+    navigate("/");
+  };
 
   return (
     <Box
@@ -188,6 +198,7 @@ export function Sidebar({
         </IconButton>
         <Button
           className="menu-text"
+          onClick={HandleLogout}
           sx={{
             fontFamily: "var(--font-family-montserrat)",
             fontSize: "var(--font-md)",

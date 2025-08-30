@@ -23,7 +23,7 @@ function NavbarDashboard() {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "About Us", path: "/about" },
-    { name: "Services", path: "/service" },
+    { name: "Sell Your RV", path: "/RVsell" },
     { name: "Faq", path: "/faq" },
     { name: "Contact Us", path: "/contact" },
   ];
@@ -31,6 +31,8 @@ function NavbarDashboard() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [openDrawer, setOpenDrawer] = useState(false);
+
+  const token = localStorage.getItem("token");
 
   return (
     <>
@@ -255,7 +257,9 @@ function NavbarDashboard() {
                     },
                   },
                 }}
-                onClick={() => navigate("/login")}
+                onClick={() =>
+                  token ? navigate("/dashboard") : navigate("/login")
+                }
               >
                 <Typography
                   className="hover-text"
@@ -297,37 +301,6 @@ function NavbarDashboard() {
               <CloseIcon sx={{ color: "white" }} />
             </IconButton>
           </Box>
-
-          {/* Login Button at Top in Drawer */}
-          <Box
-            sx={{
-              width: "100%",
-              height: "50px",
-              backgroundColor: "var(--white-text)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              border: "1px solid var(--icon-color)",
-              borderRadius: "3px",
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              navigate("/login");
-              setOpenDrawer(false);
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: "var(--font-sm)",
-                fontFamily: "var(--font-family-montserrat)",
-                fontWeight: 600,
-                color: "var(--bg-color)",
-              }}
-            >
-              Login Now
-            </Typography>
-          </Box>
-
           {/* Nav Links in Column */}
           <Stack direction="column" spacing={3} mt={2}>
             {navLinks.map((link) => (
@@ -354,6 +327,23 @@ function NavbarDashboard() {
               </Link>
             ))}
           </Stack>
+          <Drawer />
+          {/* Login Button at Top in Drawer */}
+          <Typography
+            onClick={() => navigate(token ? "/dashboard" : "/login")}
+            sx={{
+              color: "var(--white-text)",
+              fontSize: "var(--font-sm)",
+              fontWeight: 400,
+              fontFamily: "var(--font-family-montserrat)",
+              "&:hover": {
+                color: "var(--icon-color)",
+                cursor: "pointer",
+              },
+            }}
+          >
+            {token ? "Dashboard" : "Login Now"}
+          </Typography>
         </Box>
       </Drawer>
     </>

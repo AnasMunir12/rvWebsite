@@ -20,9 +20,9 @@ import YesCheckedImg from "../../../../public/images/sellrv/checked.svg";
 import YesUncheckedImg from "../../../../public/images/sellrv/unChecked.svg";
 import NoCheckedImg from "../../../../public/images/sellrv/checked.svg";
 import NoUncheckedImg from "../../../../public/images/sellrv/unChecked.svg";
-import { useDispatch } from "react-redux";
-import { addRvDetails } from "../../../store/slices/RvConsignment";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { submitForm } from "../../../store/slices/RvConsignment";
 
 const CustomCheckbox = ({ value, selected, onChange }) => (
   <Checkbox
@@ -50,6 +50,8 @@ function Banner() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const { status, error } = useSelector((state) => state.rvConsignment);
+
   const rv = [
     { value: "Class A", label: "Class A" },
     { value: "Class B", label: "Class B" },
@@ -76,13 +78,17 @@ function Banner() {
     make: "",
     model: "",
     mileage: "",
-    conditionValue: "",
-    salePrice: "",
-    owner: "yes",
-    lien: "yes",
-    fullName: "",
-    email: "",
-    phone: "",
+    condition: "",
+    desiredPrice: "",
+    ownership: {
+      isOwner: false,
+      hasLien: false,
+    },
+    contact: {
+      name: "",
+      email: "",
+      phone: "",
+    },
   };
 
   const validationSchema = Yup.object({
@@ -91,11 +97,11 @@ function Banner() {
     make: Yup.string().required("Make is required"),
     model: Yup.string().required("Model is required"),
     mileage: Yup.string().required("Mileage is required"),
-    conditionValue: Yup.string().required("Condition is required"),
-    salePrice: Yup.string().required("Sale price is required"),
+    condition: Yup.string().required("Condition is required"),
+    desiredPrice: Yup.string().required("Sale price is required"),
     owner: Yup.string().required("Owner info is required"),
     lien: Yup.string().required("Lien info is required"),
-    fullName: Yup.string().required("Full name is required"),
+    name: Yup.string().required("Full name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     phone: Yup.string()
       .matches(
@@ -106,10 +112,24 @@ function Banner() {
   });
 
   const HandleSubmit = (values, { resetForm }) => {
-    dispatch(addRvDetails(values));
-    console.log("Submitted Data:", values);
+    const formatedValues = {
+      ...values,
+      ownership: {
+        isOwner: values.ownership.isOwner === "yes",
+        hasLien: values.ownership.hasLien === "yes",
+      },
+      mileage: parseInt(values.mileage),
+      year: parseInt(values.year),
+      desiredPrice: parseInt(values.desiredPrice),
+    };
+    dispatch(submitForm(formatedValues));
+    console.log("Submitted Data:", formatedValues);
     resetForm();
-    navigate("/login");
+    if (localStorage.getItem("token")) {
+      navigate("/dashboard");
+    } else {
+      navigate("/login");
+    }
   };
 
   return (
@@ -212,7 +232,14 @@ function Banner() {
               validateOnChange={true}
               validateOnBlur={true}
             >
-              {({ values, errors, touched, handleChange, handleBlur }) => (
+              {({
+                values,
+                errors,
+                touched,
+                handleChange,
+                handleBlur,
+                setFieldValue,
+              }) => (
                 <Form
                   noValidate // <-- prevent browser "Please fill in this field"
                   style={{
@@ -256,8 +283,8 @@ function Banner() {
                     </Box>
 
                     <Grid container spacing={4}>
+                      {/* RV Type */}
                       <Grid size={{ xs: 12, sm: 6 }}>
-                        {/* RV Type */}
                         <Typography
                           sx={{
                             fontSize: "var(--font-sm)",
@@ -356,9 +383,8 @@ function Banner() {
                         </TextField>
                       </Grid>
 
+                      {/* Year */}
                       <Grid size={{ xs: 12, sm: 6 }}>
-                        {/* Year */}
-
                         <Typography
                           sx={{
                             fontSize: "var(--font-sm)",
@@ -460,7 +486,6 @@ function Banner() {
                       </Grid>
 
                       {/* Make */}
-
                       <Grid size={{ xs: 12, md: 6 }}>
                         <Typography
                           sx={{
@@ -624,7 +649,6 @@ function Banner() {
                       </Grid>
 
                       {/* Conditions */}
-
                       <Grid size={{ xs: 12, sm: 6 }}>
                         <Typography
                           sx={{
@@ -642,15 +666,15 @@ function Banner() {
                           required
                           fullWidth
                           select
-                          name="conditionValue"
-                          value={values.conditionValue}
+                          name="condition"
+                          value={values.condition}
                           onChange={handleChange}
                           helperText={
-                            touched.conditionValue && errors.conditionValue ? (
+                            touched.condition && errors.condition ? (
                               <span
                                 style={{ color: "#ff0015ff", fontWeight: 500 }}
                               >
-                                {errors.conditionValue}
+                                {errors.condition}
                               </span>
                             ) : null
                           }
@@ -750,16 +774,16 @@ function Banner() {
                           size="small"
                           required
                           fullWidth
-                          name="salePrice"
+                          name="desiredPrice"
                           placeholder="E.g. $34999.00"
-                          value={values.salePrice}
+                          value={values.desiredPrice}
                           onChange={handleChange}
                           helperText={
-                            touched.salePrice && errors.salePrice ? (
+                            touched.desiredPrice && errors.desiredPrice ? (
                               <span
                                 style={{ color: "#ff0015ff", fontWeight: 500 }}
                               >
-                                {errors.salePrice}
+                                {errors.desiredPrice}
                               </span>
                             ) : null
                           }
@@ -1059,15 +1083,15 @@ function Banner() {
                           size="small"
                           required
                           fullWidth
-                          name="fullName"
-                          value={values.fullName}
+                          name="name"
+                          value={values.name}
                           onChange={handleChange}
                           helperText={
-                            touched.fullName && errors.fullName ? (
+                            touched.name && errors.name ? (
                               <span
                                 style={{ color: "#ff0015ff", fontWeight: 500 }}
                               >
-                                {errors.fullName}
+                                {errors.name}
                               </span>
                             ) : null
                           }
@@ -1227,6 +1251,10 @@ function Banner() {
                       Submit
                     </Button>
                   </Box>
+
+                  {status === "loading" && <p>Submitting...</p>}
+                  {status === "succeeded" && <p>Lead saved successfully!</p>}
+                  {status === "failed" && <p>Error: {error}</p>}
                 </Form>
               )}
             </Formik>
