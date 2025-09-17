@@ -18,9 +18,9 @@ function Footer() {
       path: "/about",
     },
     {
-      label: "Services",
+      label: "Sell Your RV ",
       icon: "/images/landingpage/footer/arrow.svg",
-      path: "/services",
+      path: "/RVsell",
     },
     {
       label: "Contact",

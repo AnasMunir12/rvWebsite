@@ -37,14 +37,14 @@ function Banner() {
                 justifyContent: "center",
                 alignContent: "center",
                 pl: { xs: 2, sm: 10 },
-                pr: 4,
+                pr: 2,
                 gap: 1,
                 py: { xs: 10, md: 8, lg: 0 },
               }}
             >
               <Box
                 display="flex"
-                justifyContent={{ xs: "center", md: "start" }}
+                justifyContent={{ xs: "center", sm: "start" }}
                 gap={1}
               >
                 <IconButton disableRipple sx={{ p: 0 }}>

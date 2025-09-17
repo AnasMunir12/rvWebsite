@@ -135,18 +135,22 @@ function Process() {
       <Grid container spacing={4}>
         {/* Left Grid */}
         <Grid size={{ xs: 12, md: 6 }}>
-          <Grid container spacing={2}>
+          <Grid
+            container
+            spacing={2}
+            sx={{ justifyContent: { xs: "center", md: "start" } }}
+          >
             {processSteps.map((step, index) => (
               <Box
                 key={index}
                 onClick={() => setSelected(step)}
                 sx={{
                   height: { xs: 90, sm: 140 },
-                  width: { xs: "100%", sm: 250 },
+                  width: { xs: "100%", sm: 200, md: 250 },
                   display: "flex",
                   flexDirection: { xs: "row", sm: "column" },
                   alignItems: { xs: "center", sm: "start" },
-                  justifyContent: "center",
+                  justifyContent: { xs: "start", md: "center" },
                   gap: 2,
                   p: 2,
                   cursor: "pointer",
@@ -181,7 +185,7 @@ function Process() {
                     fontFamily: "var(--font-family-montserrat)",
                     fontWeight: 600,
                     fontSize: "var(--font-md)",
-                    mt: 1,
+                    mt: { xs: 0, md: 1 },
                     color:
                       selected.title === step.title
                         ? "var(--white-text)"

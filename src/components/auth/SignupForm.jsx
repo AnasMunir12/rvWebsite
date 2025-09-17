@@ -162,7 +162,6 @@ function SignupForm() {
               flexDirection: "column",
               textAlign: "center",
               py: { xs: 6, md: 10 },
-              border: "1px solid red",
             }}
           >
             {success && (
@@ -175,8 +174,11 @@ function SignupForm() {
               <Typography
                 sx={{
                   color: "var(--bg-color)",
-                  fontSize: { xs: "var(--font-basic)", md: "var(--font-xl)" },
-                  fontWeight: 400,
+                  fontSize: {
+                    xs: "var(--font-standard)",
+                    md: "var(--font-xl)",
+                  },
+                  fontWeight: 500,
                   fontFamily: "var(--font-family-montserrat)",
                   lineHeight: "14px",
                 }}

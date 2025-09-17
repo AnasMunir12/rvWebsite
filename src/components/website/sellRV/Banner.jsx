@@ -196,6 +196,7 @@ function Banner() {
               fontFamily: "var(--font-family-lato)",
               color: "var(--white-text)",
               lineHeight: "26px",
+              px: { xs: 2, sm: 0 },
               textAlign: { xs: "center", md: "start" },
             }}
           >
@@ -274,7 +275,10 @@ function Banner() {
                       <Typography
                         sx={{
                           color: "var(--icon-color)",
-                          fontSize: "var(--font-basic)",
+                          fontSize: {
+                            xs: "var(--font-md)",
+                            md: "var(--font-basic)",
+                          },
                           fontFamily: "var(--font-family-montserrat)",
                         }}
                       >
@@ -837,7 +841,10 @@ function Banner() {
                       <Typography
                         sx={{
                           color: "var(--icon-color)",
-                          fontSize: "var(--font-basic)",
+                          fontSize: {
+                            xs: "var(--font-md)",
+                            md: "var(--font-basic)",
+                          },
                           fontFamily: "var(--font-family-montserrat)",
                         }}
                       >
@@ -1055,7 +1062,10 @@ function Banner() {
                       <Typography
                         sx={{
                           color: "var(--icon-color)",
-                          fontSize: "var(--font-basic)",
+                          fontSize: {
+                            xs: "var(--font-md)",
+                            md: "var(--font-basic)",
+                          },
                           fontFamily: "var(--font-family-montserrat)",
                         }}
                       >
